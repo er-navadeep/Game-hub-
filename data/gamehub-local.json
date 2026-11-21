@@ -312,6 +312,44 @@
   ],
   "bookings": [
     {
+      "_id": "6b012bfd9f39fa146c3bf25e",
+      "bookingId": "#GH-31303",
+      "userId": "6b012bd19f39fa146c3bf25a",
+      "venueId": "6b010bd148cef76935eae673",
+      "venueName": "Smash & Spike Volleyball Complex",
+      "playerName": "harsha",
+      "phone": "6262066662",
+      "date": "2026-11-21",
+      "timeSlot": "11:00 AM - 12:00 PM",
+      "category": "Offline Sports",
+      "seats": [],
+      "spotsCount": 1,
+      "courtStatusAtBooking": "Occupied",
+      "snacks": [
+        {
+          "id": "snk_3",
+          "name": "Hot Peri-Peri Cheese Maggi",
+          "price": 75,
+          "qty": 1
+        },
+        {
+          "id": "snk_2",
+          "name": "Monster Energy Super Fuel (350ml)",
+          "price": 130,
+          "qty": 1
+        }
+      ],
+      "snacksTotal": 205,
+      "paymentMethod": "Pay at Venue",
+      "paymentStatus": "Pay at Venue (Pending)",
+      "status": "Confirmed",
+      "checkInStatus": "Booked",
+      "checkInTime": null,
+      "totalAmount": 805,
+      "qrCodeData": "data:image/png;base64,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",
+      "createdAt": "2026-11-21T05:28:29.845Z"
+    },
+    {
       "_id": "6b012b559f39fa146c3bf253",
       "bookingId": "#GH-45581",
       "userId": "6b012b559f39fa146c3bf249",
@@ -539,6 +577,62 @@
     }
   ],
   "activity_logs": [
+    {
+      "_id": "act_17952389438307oew",
+      "action": "Owner changed court status to Empty",
+      "details": "Court status for \"Nexus Arena Esports Hub\" was updated to Empty by owner.",
+      "type": "court_status",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "courtStatus": "Empty"
+      },
+      "timestamp": "2026-11-21T05:29:03.830Z"
+    },
+    {
+      "_id": "act_1795238942266zbb7",
+      "action": "Owner changed court status to Occupied",
+      "details": "Court status for \"Nexus Arena Esports Hub\" was updated to Occupied by owner.",
+      "type": "court_status",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "courtStatus": "Occupied"
+      },
+      "timestamp": "2026-11-21T05:29:02.266Z"
+    },
+    {
+      "_id": "act_1795238940420bkzn",
+      "action": "Owner changed court status to Empty",
+      "details": "Court status for \"Nexus Arena Esports Hub\" was updated to Empty by owner.",
+      "type": "court_status",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "courtStatus": "Empty"
+      },
+      "timestamp": "2026-11-21T05:29:00.420Z"
+    },
+    {
+      "_id": "act_17952389099583wbs",
+      "action": "Customer booked 1 spot(s) + 2 F&B item(s)",
+      "details": "harsha reserved 1 spot(s) + 2 F&B item(s) at Smash & Spike Volleyball Complex for 2026-11-21 (11:00 AM - 12:00 PM) [#GH-31303]",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-31303",
+        "venueId": "6b010bd148cef76935eae673",
+        "totalAmount": 805
+      },
+      "timestamp": "2026-11-21T05:28:29.958Z"
+    },
+    {
+      "_id": "act_1795238865796afik",
+      "action": "New user registered",
+      "details": "harsha created an account with preferred city Bangalore.",
+      "type": "user",
+      "meta": {
+        "userId": "6b012bd19f39fa146c3bf25a",
+        "email": "navadeeptl038@gmail.com"
+      },
+      "timestamp": "2026-11-21T05:27:45.796Z"
+    },
     {
       "_id": "act_1795238741581gr6e",
       "action": "Booking cancelled by player",
@@ -1002,6 +1096,18 @@
   ],
   "squad_beacons": [],
   "users": [
+    {
+      "_id": "6b012bd19f39fa146c3bf25a",
+      "name": "harsha",
+      "email": "navadeeptl038@gmail.com",
+      "phone": "6262066662",
+      "city": "Bangalore",
+      "password": "abc@123",
+      "favoriteGames": [
+        "Free Fire"
+      ],
+      "createdAt": "2026-11-21T05:27:45.761Z"
+    },
     {
       "_id": "6b012b559f39fa146c3bf249",
       "name": "Aditya Sen",
