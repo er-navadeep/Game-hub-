@@ -1,7 +1,7 @@
 {
   "venues": [
     {
-      "_id": "673d001a1111111111111111",
+      "_id": "6b010bd148cef76935eae672",
       "shopName": "Nexus Arena Esports Hub",
       "ownerName": "Vikram Malhotra",
       "phone": "+91 98765 43210",
@@ -12,11 +12,10 @@
       "category": "Online Gaming",
       "gamesOffered": [
         "Valorant",
-        "PUBG PC",
-        "Free Fire MAX",
-        "PS5 Pro (FIFA 24)",
         "Counter-Strike 2",
-        "Dota 2"
+        "PUBG / BGMI",
+        "PC Gaming",
+        "Racing Simulator"
       ],
       "pricePerHour": 150,
       "totalCapacity": 24,
@@ -24,11 +23,42 @@
       "subscriptionStatus": "Active",
       "subscriptionFee": 999,
       "description": "Premier RGB gaming lounge with RTX 4090 rigs, 360Hz monitors, secretlab chairs, and fiber-optic low-ping lines.",
-      "rating": 4.9,
-      "createdAt": "2026-11-20T14:36:18.197Z"
+      "rating": 5,
+      "subscriptionPaidAt": "2026-11-21T03:11:13.048Z",
+      "createdAt": "2026-11-21T03:11:13.048Z",
+      "__v": 2,
+      "updatedAt": "2026-11-21T04:15:59.553Z",
+      "subscriptionPaid": true,
+      "reviewCount": 3,
+      "reviews": [
+        {
+          "_id": "6b012b559f39fa146c3bf24f",
+          "userName": "Aditya Sen",
+          "userId": null,
+          "rating": 5,
+          "comment": "Top-tier low latency fiber connection, very clean stations and great vibes!",
+          "createdAt": "2026-11-21T05:25:41.416Z"
+        },
+        {
+          "userName": "Aman Sharma",
+          "userId": null,
+          "rating": 5,
+          "comment": "Unbelievable 240Hz setups and 5ms ping to Mumbai servers. The Red Bull cafe is a huge plus!",
+          "createdAt": "2026-11-19T04:15:59.374Z",
+          "_id": "6b011aff9cbea10ecbb51ffd"
+        },
+        {
+          "userName": "Tanmay Bhatt",
+          "userId": null,
+          "rating": 5,
+          "comment": "Best LAN center in Bangalore. Great Secretlab chairs and friendly staff.",
+          "createdAt": "2026-11-20T04:15:59.374Z",
+          "_id": "6b011aff9cbea10ecbb51ffe"
+        }
+      ]
     },
     {
-      "_id": "673d001a2222222222222222",
+      "_id": "6b010bd148cef76935eae673",
       "shopName": "Smash & Spike Volleyball Complex",
       "ownerName": "Kavita Reddy",
       "phone": "+91 91234 56789",
@@ -49,10 +79,13 @@
       "subscriptionFee": 999,
       "description": "Olympic maplewood indoor volleyball courts with professional net systems, LED broadcast lighting, and locker facilities.",
       "rating": 4.8,
-      "createdAt": "2026-11-20T14:36:18.197Z"
+      "subscriptionPaidAt": "2026-11-21T03:11:13.049Z",
+      "createdAt": "2026-11-21T03:11:13.049Z",
+      "__v": 0,
+      "updatedAt": "2026-11-21T03:11:13.054Z"
     },
     {
-      "_id": "673d001a3333333333333333",
+      "_id": "6b010bd148cef76935eae674",
       "shopName": "BlueWave Olympic Aquatics & Pool",
       "ownerName": "Arunmozhi Varman",
       "phone": "+91 99887 76655",
@@ -62,10 +95,7 @@
       "image": "https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1000&q=80",
       "category": "Offline Sports",
       "gamesOffered": [
-        "Swimming",
-        "Lap Swimming",
-        "Water Polo",
-        "Aqua Aerobics"
+        "Swimming"
       ],
       "pricePerHour": 250,
       "totalCapacity": 10,
@@ -74,10 +104,25 @@
       "subscriptionFee": 999,
       "description": "Temperature-controlled 50m Olympic size indoor pool with 8 lanes, certified lifeguards, and strict 10-swimmer capacity batches.",
       "rating": 4.9,
-      "createdAt": "2026-11-20T14:36:18.197Z"
+      "subscriptionPaidAt": "2026-11-21T03:11:13.049Z",
+      "createdAt": "2026-11-21T03:11:13.049Z",
+      "__v": 2,
+      "updatedAt": "2026-11-21T04:15:59.594Z",
+      "subscriptionPaid": true,
+      "reviewCount": 1,
+      "reviews": [
+        {
+          "userName": "Chennai Swim Club",
+          "userId": null,
+          "rating": 5,
+          "comment": "Strict 10 person limit makes lane swimming so peaceful. Water temperature is always dialed in.",
+          "createdAt": "2026-11-17T04:15:59.374Z",
+          "_id": "6b011aff9cbea10ecbb52007"
+        }
+      ]
     },
     {
-      "_id": "673d001a4444444444444444",
+      "_id": "6b010bd148cef76935eae675",
       "shopName": "Titan Turf & Esports Lounge",
       "ownerName": "Rohan Deshmukh",
       "phone": "+91 97654 32109",
@@ -99,38 +144,324 @@
       "subscriptionFee": 999,
       "description": "Dual-entertainment hub combining a high-end console & PC gaming arena with a rooftop FIFA-certified astro-turf.",
       "rating": 4.7,
-      "createdAt": "2026-11-20T14:36:18.197Z"
+      "subscriptionPaidAt": "2026-11-21T03:11:13.049Z",
+      "createdAt": "2026-11-21T03:11:13.049Z",
+      "__v": 0,
+      "updatedAt": "2026-11-21T03:11:13.054Z"
+    },
+    {
+      "_id": "6b010e5bbd192a3eb004f0e1",
+      "shopName": "Apex Pro Gaming & PS5 Lounge",
+      "ownerName": "Rohan Deshmukh",
+      "phone": "+91 98450 67890",
+      "city": "Mumbai",
+      "address": "2nd Floor, Phoenix Marketcity, LBS Marg, Kurla West, Mumbai, Maharashtra 400070",
+      "mapUrl": "https://maps.google.com/?q=Phoenix+Marketcity+Mumbai",
+      "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1000&q=80",
+      "category": "Online Gaming",
+      "gamesOffered": [
+        "PS5",
+        "FIFA / EA FC",
+        "Free Fire",
+        "Call of Duty",
+        "PC Gaming"
+      ],
+      "pricePerHour": 180,
+      "totalCapacity": 20,
+      "courtStatus": "Empty",
+      "subscriptionStatus": "Active",
+      "subscriptionFee": 999,
+      "subscriptionPaid": true,
+      "description": "Flagship console & PC battleground with 75-inch OLED 120Hz screens, DualSense Edge controllers, and pro team LAN booths.",
+      "rating": 4.8,
+      "subscriptionPaidAt": "2026-11-21T03:22:03.743Z",
+      "createdAt": "2026-11-21T03:22:03.743Z",
+      "updatedAt": "2026-11-21T04:15:59.581Z",
+      "__v": 1,
+      "reviewCount": 1,
+      "reviews": [
+        {
+          "userName": "Priya Mehta",
+          "userId": null,
+          "rating": 5,
+          "comment": "Crystal clear 4K OLED screens for FIFA 24. Clean venue and fast booking pass verification.",
+          "createdAt": "2026-11-20T04:15:59.374Z",
+          "_id": "6b011aff9cbea10ecbb52001"
+        }
+      ]
+    },
+    {
+      "_id": "6b010e5bbd192a3eb004f0e4",
+      "shopName": "Smash & Spike Volleyball & Badminton Complex",
+      "ownerName": "Kavita Reddy",
+      "phone": "+91 91234 56789",
+      "city": "Hyderabad",
+      "address": "Plot 42, Gachibowli Stadium Road, Near Bio-Diversity Park, Hyderabad, Telangana 500032",
+      "mapUrl": "https://maps.google.com/?q=Gachibowli+Stadium+Hyderabad",
+      "image": "https://images.unsplash.com/photo-1612872087720-bb876e2e67d1?auto=format&fit=crop&w=1000&q=80",
+      "category": "Offline Sports",
+      "gamesOffered": [
+        "Volleyball",
+        "Badminton",
+        "Table Tennis"
+      ],
+      "pricePerHour": 500,
+      "totalCapacity": 2,
+      "courtStatus": "Empty",
+      "subscriptionStatus": "Active",
+      "subscriptionFee": 999,
+      "subscriptionPaid": true,
+      "description": "Olympic maplewood indoor volleyball & BWF-grade synthetic badminton courts with broadcast LED lighting and shower lockers.",
+      "rating": 4.8,
+      "subscriptionPaidAt": "2026-11-21T03:22:03.749Z",
+      "createdAt": "2026-11-21T03:22:03.749Z",
+      "updatedAt": "2026-11-21T04:15:59.587Z",
+      "__v": 1,
+      "reviewCount": 1,
+      "reviews": [
+        {
+          "userName": "Sanjay Varma",
+          "userId": null,
+          "rating": 5,
+          "comment": "High ceiling, perfect grip on wooden floor, and excellent lighting with zero glare.",
+          "createdAt": "2026-11-18T04:15:59.374Z",
+          "_id": "6b011aff9cbea10ecbb52004"
+        }
+      ]
+    },
+    {
+      "_id": "6b010e5bbd192a3eb004f0e9",
+      "shopName": "Titan Box Cricket, Futsal & Hoops Arena",
+      "ownerName": "Sameer Sheikh",
+      "phone": "+91 97555 66778",
+      "city": "Bangalore",
+      "address": "Rooftop Sports Park, Outer Ring Road, Bellandur, Bangalore, Karnataka 560103",
+      "mapUrl": "https://maps.google.com/?q=Bellandur+Bangalore",
+      "image": "https://images.unsplash.com/photo-1529900748604-07564a03e7a6?auto=format&fit=crop&w=1000&q=80",
+      "category": "Offline Sports",
+      "gamesOffered": [
+        "Box Cricket",
+        "Futsal",
+        "Basketball"
+      ],
+      "pricePerHour": 750,
+      "totalCapacity": 1,
+      "courtStatus": "Empty",
+      "subscriptionStatus": "Active",
+      "subscriptionFee": 999,
+      "subscriptionPaid": true,
+      "description": "FIFA-certified astro-turf cage for box cricket and 5v5 futsal, plus FIBA-spec hardwood basketball shootout court.",
+      "rating": 4.7,
+      "subscriptionPaidAt": "2026-11-21T03:22:03.755Z",
+      "createdAt": "2026-11-21T03:22:03.755Z",
+      "updatedAt": "2026-11-21T04:15:59.601Z",
+      "__v": 1,
+      "reviewCount": 1,
+      "reviews": [
+        {
+          "userName": "Rohan Deshmukh",
+          "userId": null,
+          "rating": 4,
+          "comment": "Great netting height for power hitters in box cricket. Floodlights are bright.",
+          "createdAt": "2026-11-19T04:15:59.374Z",
+          "_id": "6b011aff9cbea10ecbb5200a"
+        }
+      ]
+    },
+    {
+      "_id": "6b010e5bbd192a3eb004f0ec",
+      "shopName": "Velocity Club: Esports, Snooker & Sports Lounge",
+      "ownerName": "Tanmay Joshi",
+      "phone": "+91 97654 32109",
+      "city": "Mumbai",
+      "address": "Crossover Mall Rooftop, Link Road, Andheri West, Mumbai, Maharashtra 400053",
+      "mapUrl": "https://maps.google.com/?q=Andheri+West+Mumbai",
+      "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1000&q=80",
+      "category": "Both",
+      "gamesOffered": [
+        "Snooker / Pool",
+        "PS5",
+        "PC Gaming",
+        "FIFA / EA FC",
+        "Table Tennis"
+      ],
+      "pricePerHour": 200,
+      "totalCapacity": 16,
+      "courtStatus": "Empty",
+      "subscriptionStatus": "Active",
+      "subscriptionFee": 999,
+      "subscriptionPaid": true,
+      "description": "Hybrid entertainment lounge with tournament-grade English snooker tables, PS5 Pro setups, and RTX gaming rigs.",
+      "rating": 4.8,
+      "subscriptionPaidAt": "2026-11-21T03:22:03.759Z",
+      "createdAt": "2026-11-21T03:22:03.759Z",
+      "updatedAt": "2026-11-21T04:15:59.607Z",
+      "__v": 1,
+      "reviewCount": 1,
+      "reviews": [
+        {
+          "userName": "Farhan Akhtar",
+          "userId": null,
+          "rating": 5,
+          "comment": "Pristine Strachan cloth on the snooker tables and top-tier cues. Great snack bar.",
+          "createdAt": "2026-11-20T04:15:59.374Z",
+          "_id": "6b011aff9cbea10ecbb5200d"
+        }
+      ]
     }
   ],
   "bookings": [
     {
-      "_id": "673d001b1111111111111111",
-      "bookingId": "#GH-84920",
-      "venueId": "673d001a1111111111111111",
+      "_id": "6b012b559f39fa146c3bf253",
+      "bookingId": "#GH-45581",
+      "userId": "6b012b559f39fa146c3bf249",
+      "venueId": "6b010bd148cef76935eae672",
       "venueName": "Nexus Arena Esports Hub",
-      "playerName": "Aman Sharma",
-      "phone": "+91 98201 12345",
-      "date": "2026-11-20",
-      "timeSlot": "05:00 PM - 06:00 PM",
+      "playerName": "Aditya Sen",
+      "phone": "+91 98888 77777",
+      "date": "2026-12-11",
+      "timeSlot": "06:00 PM - 07:00 PM",
       "category": "Online Gaming",
       "seats": [
-        "A1",
-        "A2"
+        "A5",
+        "A6"
       ],
       "spotsCount": 2,
+      "courtStatusAtBooking": "Occupied",
+      "snacks": [
+        {
+          "id": "snk_1",
+          "name": "Red Bull Energy Drink (250ml)",
+          "price": 125,
+          "qty": 2
+        }
+      ],
+      "snacksTotal": 250,
       "paymentMethod": "Pay Online",
-      "paymentStatus": "Paid Online",
-      "totalAmount": 300,
-      "createdAt": "2026-11-20T12:36:18.197Z"
+      "paymentStatus": "Refunded",
+      "status": "Cancelled",
+      "checkInStatus": "Cancelled",
+      "checkInTime": null,
+      "totalAmount": 550,
+      "qrCodeData": "data:image/png;base64,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",
+      "createdAt": "2026-11-21T05:25:41.458Z"
     },
     {
-      "_id": "673d001b2222222222222222",
+      "_id": "6b011f254d4e51dacd433629",
+      "bookingId": "#GH-47297",
+      "userId": "6b011f254d4e51dacd433620",
+      "venueId": "6b010bd148cef76935eae672",
+      "venueName": "Nexus Arena Esports Hub",
+      "playerName": "Aditya Sen",
+      "phone": "+91 98888 77777",
+      "date": "2026-12-10",
+      "timeSlot": "06:00 PM - 07:00 PM",
+      "category": "Online Gaming",
+      "seats": [
+        "A5",
+        "A6"
+      ],
+      "spotsCount": 2,
+      "courtStatusAtBooking": "Occupied",
+      "snacks": [
+        {
+          "id": "snk_1",
+          "name": "Red Bull Energy Drink (250ml)",
+          "price": 125,
+          "qty": 2
+        }
+      ],
+      "snacksTotal": 250,
+      "paymentMethod": "Pay Online",
+      "paymentStatus": "Refunded",
+      "status": "Cancelled",
+      "checkInStatus": "Cancelled",
+      "totalAmount": 550,
+      "qrCodeData": "data:image/png;base64,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",
+      "createdAt": "2026-11-21T04:33:41.267Z",
+      "updatedAt": "2026-11-21T04:33:41.315Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c3afb405a5641513be0",
+      "bookingId": "#GH-48958",
+      "userId": "6b011c3afb405a5641513bd7",
+      "venueId": "6b010bd148cef76935eae672",
+      "venueName": "Nexus Arena Esports Hub",
+      "playerName": "Aditya Sen",
+      "phone": "+91 98888 77777",
+      "date": "2026-12-11",
+      "timeSlot": "06:00 PM - 07:00 PM",
+      "category": "Online Gaming",
+      "seats": [
+        "A5",
+        "A6"
+      ],
+      "spotsCount": 2,
+      "courtStatusAtBooking": "Occupied",
+      "snacks": [
+        {
+          "id": "snk_1",
+          "name": "Red Bull Energy Drink (250ml)",
+          "price": 125,
+          "qty": 2
+        }
+      ],
+      "snacksTotal": 250,
+      "paymentMethod": "Pay Online",
+      "paymentStatus": "Refunded",
+      "status": "Cancelled",
+      "checkInStatus": "Cancelled",
+      "totalAmount": 550,
+      "qrCodeData": "data:image/png;base64,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",
+      "createdAt": "2026-11-21T04:21:14.462Z",
+      "updatedAt": "2026-11-21T04:21:14.469Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b7f95ebcbd49684edd6",
+      "bookingId": "#GH-48723",
+      "userId": "6b011b7f95ebcbd49684edcd",
+      "venueId": "6b010bd148cef76935eae672",
+      "venueName": "Nexus Arena Esports Hub",
+      "playerName": "Aditya Sen",
+      "phone": "+91 98888 77777",
+      "date": "2026-11-22",
+      "timeSlot": "06:00 PM - 07:00 PM",
+      "category": "Online Gaming",
+      "seats": [
+        "A5",
+        "A6"
+      ],
+      "spotsCount": 2,
+      "courtStatusAtBooking": "Occupied",
+      "snacks": [
+        {
+          "id": "snk_1",
+          "name": "Red Bull Energy Drink (250ml)",
+          "price": 125,
+          "qty": 2
+        }
+      ],
+      "snacksTotal": 250,
+      "paymentMethod": "Pay Online",
+      "paymentStatus": "Paid Online",
+      "status": "Confirmed",
+      "checkInStatus": "Booked",
+      "totalAmount": 550,
+      "qrCodeData": "data:image/png;base64,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",
+      "createdAt": "2026-11-21T04:18:07.089Z",
+      "updatedAt": "2026-11-21T04:18:07.089Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b010bd148cef76935eae679",
       "bookingId": "#GH-91024",
-      "venueId": "673d001a1111111111111111",
+      "venueId": "6b010bd148cef76935eae672",
       "venueName": "Nexus Arena Esports Hub",
       "playerName": "Priya Mehta",
       "phone": "+91 98450 67890",
-      "date": "2026-11-20",
+      "date": "2026-11-21",
       "timeSlot": "05:00 PM - 06:00 PM",
       "category": "Online Gaming",
       "seats": [
@@ -139,169 +470,679 @@
         "B1"
       ],
       "spotsCount": 3,
+      "courtStatusAtBooking": "Occupied",
+      "snacksTotal": 0,
       "paymentMethod": "Pay at Venue",
       "paymentStatus": "Pay at Venue (Pending)",
+      "checkInStatus": "Booked",
       "totalAmount": 450,
-      "createdAt": "2026-11-20T13:06:18.197Z"
+      "qrCodeData": "{\"ticket\":\"#GH-91024\",\"venue\":\"Nexus Arena Esports Hub\",\"player\":\"Priya Mehta\",\"seats\":[\"A3\",\"A4\",\"B1\"],\"date\":\"2026-11-21\",\"slot\":\"05:00 PM - 06:00 PM\",\"status\":\"PAY AT VENUE\"}",
+      "snacks": [],
+      "createdAt": "2026-11-21T03:11:13.092Z",
+      "__v": 0,
+      "updatedAt": "2026-11-21T03:11:13.093Z",
+      "userId": null
     },
     {
-      "_id": "673d001b3333333333333333",
+      "_id": "6b010bd148cef76935eae67a",
       "bookingId": "#GH-33418",
-      "venueId": "673d001a3333333333333333",
+      "venueId": "6b010bd148cef76935eae674",
       "venueName": "BlueWave Olympic Aquatics & Pool",
       "playerName": "Chennai Swim Club (Batch of 6)",
       "phone": "+91 94441 55667",
-      "date": "2026-11-20",
+      "date": "2026-11-21",
       "timeSlot": "05:00 PM - 06:00 PM",
       "category": "Offline Sports",
       "seats": [],
       "spotsCount": 6,
+      "courtStatusAtBooking": "Occupied",
+      "snacksTotal": 0,
       "paymentMethod": "Pay Online",
       "paymentStatus": "Paid Online",
+      "checkInStatus": "Booked",
       "totalAmount": 1500,
-      "createdAt": "2026-11-20T13:36:18.197Z"
+      "qrCodeData": "{\"ticket\":\"#GH-33418\",\"venue\":\"BlueWave Olympic Aquatics & Pool\",\"player\":\"Chennai Swim Club\",\"spots\":6,\"date\":\"2026-11-21\",\"slot\":\"05:00 PM - 06:00 PM\",\"status\":\"PAID ONLINE\"}",
+      "snacks": [],
+      "createdAt": "2026-11-21T03:11:13.092Z",
+      "__v": 0,
+      "updatedAt": "2026-11-21T03:11:13.093Z",
+      "userId": null
+    },
+    {
+      "_id": "6b010bd148cef76935eae678",
+      "bookingId": "#GH-84920",
+      "venueId": "6b010bd148cef76935eae672",
+      "venueName": "Nexus Arena Esports Hub",
+      "playerName": "Aman Sharma",
+      "phone": "+91 98201 12345",
+      "date": "2026-11-21",
+      "timeSlot": "05:00 PM - 06:00 PM",
+      "category": "Online Gaming",
+      "seats": [
+        "A1",
+        "A2"
+      ],
+      "spotsCount": 2,
+      "courtStatusAtBooking": "Occupied",
+      "snacksTotal": 0,
+      "paymentMethod": "Pay Online",
+      "paymentStatus": "Paid Online",
+      "checkInStatus": "Checked-In",
+      "totalAmount": 300,
+      "qrCodeData": "{\"ticket\":\"#GH-84920\",\"venue\":\"Nexus Arena Esports Hub\",\"player\":\"Aman Sharma\",\"seats\":[\"A1\",\"A2\"],\"date\":\"2026-11-21\",\"slot\":\"05:00 PM - 06:00 PM\",\"status\":\"PAID ONLINE\"}",
+      "snacks": [],
+      "createdAt": "2026-11-21T03:11:13.091Z",
+      "__v": 0,
+      "updatedAt": "2026-11-21T03:24:51.795Z",
+      "checkInTime": "2026-11-21T03:24:51.794Z",
+      "userId": null
     }
   ],
   "activity_logs": [
     {
-      "_id": "673d001c1111111111111111",
-      "action": "System Initialized",
-      "details": "GameHub platform database initialized with 4 verified demo hubs.",
-      "type": "system",
-      "timestamp": "2026-11-20T09:36:18.197Z"
+      "_id": "act_1795238741581gr6e",
+      "action": "Booking cancelled by player",
+      "details": "Customer Aditya Sen cancelled reservation #GH-45581 (Nexus Arena Esports Hub). Stations/court spots have been freed up.",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-45581",
+        "venueId": "6b010bd148cef76935eae672"
+      },
+      "timestamp": "2026-11-21T05:25:41.581Z"
     },
     {
-      "_id": "673d001c2222222222222222",
+      "_id": "act_17952387415232gf6",
+      "action": "Customer booked Seats A5, A6 + 1 F&B item(s)",
+      "details": "Aditya Sen reserved Seats A5, A6 + 1 F&B item(s) at Nexus Arena Esports Hub for 2026-12-11 (06:00 PM - 07:00 PM) [#GH-45581]",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-45581",
+        "venueId": "6b010bd148cef76935eae672",
+        "totalAmount": 550
+      },
+      "timestamp": "2026-11-21T05:25:41.523Z"
+    },
+    {
+      "_id": "act_1795238741447yi1g",
+      "action": "Venue review posted",
+      "details": "Aditya Sen gave 5★ to Nexus Arena Esports Hub: \"Top-tier low latency fiber connection, very clean ...\"",
+      "type": "review",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "rating": 5
+      },
+      "timestamp": "2026-11-21T05:25:41.447Z"
+    },
+    {
+      "_id": "act_1795238741399sor8",
+      "action": "User logged in",
+      "details": "Aditya Sen logged into their GameHub account.",
+      "type": "user",
+      "meta": {
+        "userId": "6b012b559f39fa146c3bf249",
+        "email": "player_1795238741346@gamehub.test"
+      },
+      "timestamp": "2026-11-21T05:25:41.399Z"
+    },
+    {
+      "_id": "act_1795238741388hnmy",
+      "action": "New user registered",
+      "details": "Aditya Sen created an account with preferred city Bangalore.",
+      "type": "user",
+      "meta": {
+        "userId": "6b012b559f39fa146c3bf249",
+        "email": "player_1795238741346@gamehub.test"
+      },
+      "timestamp": "2026-11-21T05:25:41.388Z"
+    },
+    {
+      "_id": "6b011f254d4e51dacd43362e",
+      "action": "Booking cancelled by player",
+      "details": "Customer Aditya Sen cancelled reservation #GH-47297 (Nexus Arena Esports Hub). Stations/court spots have been freed up.",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-47297",
+        "venueId": "6b010bd148cef76935eae672"
+      },
+      "timestamp": "2026-11-21T04:33:41.344Z",
+      "createdAt": "2026-11-21T04:33:41.345Z",
+      "updatedAt": "2026-11-21T04:33:41.345Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011f254d4e51dacd43362b",
+      "action": "Customer booked Seats A5, A6 + 1 F&B item(s)",
+      "details": "Aditya Sen reserved Seats A5, A6 + 1 F&B item(s) at Nexus Arena Esports Hub for 2026-12-10 (06:00 PM - 07:00 PM) [#GH-47297]",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-47297",
+        "venueId": "6b010bd148cef76935eae672",
+        "totalAmount": 550
+      },
+      "timestamp": "2026-11-21T04:33:41.300Z",
+      "createdAt": "2026-11-21T04:33:41.301Z",
+      "updatedAt": "2026-11-21T04:33:41.301Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011f254d4e51dacd433627",
+      "action": "Venue review posted",
+      "details": "Aditya Sen gave 5★ to Nexus Arena Esports Hub: \"Top-tier low latency fiber connection, very clean ...\"",
+      "type": "review",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "rating": 5
+      },
+      "timestamp": "2026-11-21T04:33:41.200Z",
+      "createdAt": "2026-11-21T04:33:41.201Z",
+      "updatedAt": "2026-11-21T04:33:41.201Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011f254d4e51dacd433624",
+      "action": "User logged in",
+      "details": "Aditya Sen logged into their GameHub account.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011f254d4e51dacd433620",
+        "email": "player_1795235621116@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:33:41.176Z",
+      "createdAt": "2026-11-21T04:33:41.176Z",
+      "updatedAt": "2026-11-21T04:33:41.176Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011f254d4e51dacd433622",
+      "action": "New user registered",
+      "details": "Aditya Sen created an account with preferred city Bangalore.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011f254d4e51dacd433620",
+        "email": "player_1795235621116@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:33:41.149Z",
+      "createdAt": "2026-11-21T04:33:41.150Z",
+      "updatedAt": "2026-11-21T04:33:41.150Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c3afb405a5641513be5",
+      "action": "Booking cancelled by player",
+      "details": "Customer Aditya Sen cancelled reservation #GH-48958 (Nexus Arena Esports Hub). Stations/court spots have been freed up.",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-48958",
+        "venueId": "6b010bd148cef76935eae672"
+      },
+      "timestamp": "2026-11-21T04:21:14.478Z",
+      "createdAt": "2026-11-21T04:21:14.478Z",
+      "updatedAt": "2026-11-21T04:21:14.478Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c3afb405a5641513be2",
+      "action": "Customer booked Seats A5, A6 + 1 F&B item(s)",
+      "details": "Aditya Sen reserved Seats A5, A6 + 1 F&B item(s) at Nexus Arena Esports Hub for 2026-12-11 (06:00 PM - 07:00 PM) [#GH-48958]",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-48958",
+        "venueId": "6b010bd148cef76935eae672",
+        "totalAmount": 550
+      },
+      "timestamp": "2026-11-21T04:21:14.464Z",
+      "createdAt": "2026-11-21T04:21:14.465Z",
+      "updatedAt": "2026-11-21T04:21:14.465Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c3afb405a5641513bde",
+      "action": "Venue review posted",
+      "details": "Aditya Sen gave 5★ to Nexus Arena Esports Hub: \"Top-tier low latency fiber connection, very clean ...\"",
+      "type": "review",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "rating": 5
+      },
+      "timestamp": "2026-11-21T04:21:14.433Z",
+      "createdAt": "2026-11-21T04:21:14.433Z",
+      "updatedAt": "2026-11-21T04:21:14.433Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c3afb405a5641513bdb",
+      "action": "User logged in",
+      "details": "Aditya Sen logged into their GameHub account.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011c3afb405a5641513bd7",
+        "email": "player_1795234874419@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:21:14.426Z",
+      "createdAt": "2026-11-21T04:21:14.426Z",
+      "updatedAt": "2026-11-21T04:21:14.426Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c3afb405a5641513bd9",
+      "action": "New user registered",
+      "details": "Aditya Sen created an account with preferred city Bangalore.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011c3afb405a5641513bd7",
+        "email": "player_1795234874419@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:21:14.422Z",
+      "createdAt": "2026-11-21T04:21:14.423Z",
+      "updatedAt": "2026-11-21T04:21:14.423Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c1ffb405a5641513bd5",
+      "action": "Venue review posted",
+      "details": "Aditya Sen gave 5★ to Nexus Arena Esports Hub: \"Top-tier low latency fiber connection, very clean ...\"",
+      "type": "review",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "rating": 5
+      },
+      "timestamp": "2026-11-21T04:20:47.761Z",
+      "createdAt": "2026-11-21T04:20:47.762Z",
+      "updatedAt": "2026-11-21T04:20:47.762Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c1ffb405a5641513bd2",
+      "action": "User logged in",
+      "details": "Aditya Sen logged into their GameHub account.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011c1ffb405a5641513bce",
+        "email": "player_1795234847740@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:20:47.750Z",
+      "createdAt": "2026-11-21T04:20:47.750Z",
+      "updatedAt": "2026-11-21T04:20:47.750Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c1ffb405a5641513bd0",
+      "action": "New user registered",
+      "details": "Aditya Sen created an account with preferred city Bangalore.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011c1ffb405a5641513bce",
+        "email": "player_1795234847740@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:20:47.746Z",
+      "createdAt": "2026-11-21T04:20:47.746Z",
+      "updatedAt": "2026-11-21T04:20:47.746Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b7f95ebcbd49684edd8",
+      "action": "Customer booked Seats A5, A6 + 1 F&B item(s)",
+      "details": "Aditya Sen reserved Seats A5, A6 + 1 F&B item(s) at Nexus Arena Esports Hub for 2026-11-22 (06:00 PM - 07:00 PM) [#GH-48723]",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-48723",
+        "venueId": "6b010bd148cef76935eae672",
+        "totalAmount": 550
+      },
+      "timestamp": "2026-11-21T04:18:07.115Z",
+      "createdAt": "2026-11-21T04:18:07.116Z",
+      "updatedAt": "2026-11-21T04:18:07.116Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b7f95ebcbd49684edd4",
+      "action": "Venue review posted",
+      "details": "Aditya Sen gave 5★ to Nexus Arena Esports Hub: \"Top-tier low latency fiber connection, very clean ...\"",
+      "type": "review",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "rating": 5
+      },
+      "timestamp": "2026-11-21T04:18:07.060Z",
+      "createdAt": "2026-11-21T04:18:07.060Z",
+      "updatedAt": "2026-11-21T04:18:07.060Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b7f95ebcbd49684edd1",
+      "action": "User logged in",
+      "details": "Aditya Sen logged into their GameHub account.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011b7f95ebcbd49684edcd",
+        "email": "player_1795234687039@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:18:07.049Z",
+      "createdAt": "2026-11-21T04:18:07.049Z",
+      "updatedAt": "2026-11-21T04:18:07.049Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b7f95ebcbd49684edcf",
+      "action": "New user registered",
+      "details": "Aditya Sen created an account with preferred city Bangalore.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011b7f95ebcbd49684edcd",
+        "email": "player_1795234687039@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:18:07.045Z",
+      "createdAt": "2026-11-21T04:18:07.046Z",
+      "updatedAt": "2026-11-21T04:18:07.046Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b289cbea10ecbb5201d",
+      "action": "Venue review posted",
+      "details": "Aditya Sen gave 5★ to Nexus Arena Esports Hub: \"Top-tier low latency fiber connection, very clean ...\"",
+      "type": "review",
+      "meta": {
+        "venueId": "6b010bd148cef76935eae672",
+        "rating": 5
+      },
+      "timestamp": "2026-11-21T04:16:40.592Z",
+      "createdAt": "2026-11-21T04:16:40.592Z",
+      "updatedAt": "2026-11-21T04:16:40.592Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b289cbea10ecbb5201a",
+      "action": "User logged in",
+      "details": "Aditya Sen logged into their GameHub account.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011b289cbea10ecbb52016",
+        "email": "player_1795234600563@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:16:40.580Z",
+      "createdAt": "2026-11-21T04:16:40.580Z",
+      "updatedAt": "2026-11-21T04:16:40.580Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b289cbea10ecbb52018",
+      "action": "New user registered",
+      "details": "Aditya Sen created an account with preferred city Bangalore.",
+      "type": "user",
+      "meta": {
+        "userId": "6b011b289cbea10ecbb52016",
+        "email": "player_1795234600563@gamehub.test"
+      },
+      "timestamp": "2026-11-21T04:16:40.568Z",
+      "createdAt": "2026-11-21T04:16:40.568Z",
+      "updatedAt": "2026-11-21T04:16:40.568Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b010fabbd192a3eb004f0ff",
+      "action": "Customer booked Seats A1, A2 + 1 F&B item(s)",
+      "details": "Ravi Teja reserved Seats A1, A2 + 1 F&B item(s) at Zenith Arena Esports & Turf for 2026-11-21 (06:00 PM - 07:00 PM) [#GH-26571]",
+      "type": "booking",
+      "meta": {
+        "bookingId": "#GH-26571",
+        "venueId": "ven_1795231659695g1hp",
+        "totalAmount": 565
+      },
+      "timestamp": "2026-11-21T03:27:39.787Z",
+      "createdAt": "2026-11-21T03:27:39.788Z",
+      "updatedAt": "2026-11-21T03:27:39.788Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b010fabbd192a3eb004f0fc",
+      "action": "Owner changed court status to Occupied",
+      "details": "Court status for \"Zenith Arena Esports & Turf\" was updated to Occupied by owner.",
+      "type": "court_status",
+      "meta": {
+        "venueId": "ven_1795231659695g1hp",
+        "courtStatus": "Occupied"
+      },
+      "timestamp": "2026-11-21T03:27:39.714Z",
+      "createdAt": "2026-11-21T03:27:39.715Z",
+      "updatedAt": "2026-11-21T03:27:39.715Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b010fabbd192a3eb004f0fa",
       "action": "Monthly ₹999 subscription paid",
-      "details": "Nexus Arena Esports Hub renewed monthly listing pass.",
+      "details": "\"Zenith Arena Esports & Turf\" activated 30-day listing on GameHub homepage (₹999 paid).",
       "type": "subscription",
-      "timestamp": "2026-11-20T10:36:18.197Z"
+      "meta": {
+        "venueId": "ven_1795231659695g1hp",
+        "amount": 999
+      },
+      "timestamp": "2026-11-21T03:27:39.703Z",
+      "createdAt": "2026-11-21T03:27:39.704Z",
+      "updatedAt": "2026-11-21T03:27:39.704Z",
+      "__v": 0
     },
     {
-      "_id": "673d001c3333333333333333",
-      "action": "Customer booked Seats A1, A2",
-      "details": "Aman Sharma reserved 2 PC stations at Nexus Arena (#GH-84920).",
-      "type": "booking",
-      "timestamp": "2026-11-20T12:36:18.197Z"
+      "_id": "6b010fabbd192a3eb004f0f8",
+      "action": "New shop registered",
+      "details": "Owner Anil Kapoor registered \"Zenith Arena Esports & Turf\" in Bangalore with 20 capacity offering [Valorant, PS5, Box Cricket].",
+      "type": "venue",
+      "meta": {
+        "venueId": "ven_1795231659695g1hp",
+        "shopName": "Zenith Arena Esports & Turf"
+      },
+      "timestamp": "2026-11-21T03:27:39.698Z",
+      "createdAt": "2026-11-21T03:27:39.700Z",
+      "updatedAt": "2026-11-21T03:27:39.700Z",
+      "__v": 0
     },
     {
-      "_id": "673d001c4444444444444444",
-      "action": "Customer booked 6 Swimming Slots",
-      "details": "Chennai Swim Club booked 6/10 spots for 05:00 PM batch at BlueWave Aquatics (#GH-33418).",
-      "type": "booking",
-      "timestamp": "2026-11-20T13:36:18.197Z"
+      "_id": "6b010f03bd192a3eb004f0f5",
+      "action": "Reception Check-In Verified",
+      "details": "Customer Aman Sharma checked in at reception for ticket #GH-84920 (Nexus Arena Esports Hub).",
+      "type": "system",
+      "meta": {
+        "bookingId": "#GH-84920",
+        "playerName": "Aman Sharma"
+      },
+      "timestamp": "2026-11-21T03:24:51.804Z",
+      "createdAt": "2026-11-21T03:24:51.804Z",
+      "updatedAt": "2026-11-21T03:24:51.804Z",
+      "__v": 0
     },
     {
-      "_id": "673d001c5555555555555555",
+      "_id": "6b010bd148cef76935eae680",
       "action": "Court Status Verified",
       "details": "Owner confirmed Volleyball Court 1 & 2 are Empty and ready for customer matches.",
       "type": "court_status",
-      "timestamp": "2026-11-20T14:36:18.197Z"
+      "timestamp": "2026-11-21T03:11:13.097Z",
+      "__v": 0,
+      "createdAt": "2026-11-21T03:11:13.098Z",
+      "updatedAt": "2026-11-21T03:11:13.098Z"
+    },
+    {
+      "_id": "6b010bd148cef76935eae67f",
+      "action": "Customer booked 6 Swimming Slots",
+      "details": "Chennai Swim Club booked 6/10 spots for 05:00 PM batch at BlueWave Aquatics (#GH-33418).",
+      "type": "booking",
+      "timestamp": "2026-11-21T02:11:13.097Z",
+      "__v": 0,
+      "createdAt": "2026-11-21T03:11:13.098Z",
+      "updatedAt": "2026-11-21T03:11:13.098Z"
+    },
+    {
+      "_id": "6b010bd148cef76935eae67e",
+      "action": "Customer booked Seats A1, A2",
+      "details": "Aman Sharma reserved 2 PC stations at Nexus Arena (#GH-84920).",
+      "type": "booking",
+      "timestamp": "2026-11-21T01:11:13.097Z",
+      "__v": 0,
+      "createdAt": "2026-11-21T03:11:13.098Z",
+      "updatedAt": "2026-11-21T03:11:13.098Z"
+    },
+    {
+      "_id": "6b010bd148cef76935eae67d",
+      "action": "Monthly ₹999 subscription paid",
+      "details": "Nexus Arena Esports Hub renewed monthly listing pass.",
+      "type": "subscription",
+      "timestamp": "2026-11-20T23:11:13.097Z",
+      "__v": 0,
+      "createdAt": "2026-11-21T03:11:13.098Z",
+      "updatedAt": "2026-11-21T03:11:13.098Z"
+    },
+    {
+      "_id": "6b010bd148cef76935eae67c",
+      "action": "System Initialized",
+      "details": "GameHub platform database initialized with 4 verified demo hubs.",
+      "type": "system",
+      "timestamp": "2026-11-20T22:11:13.097Z",
+      "__v": 0,
+      "createdAt": "2026-11-21T03:11:13.098Z",
+      "updatedAt": "2026-11-21T03:11:13.098Z"
     }
   ],
-  "squad_beacons": [
+  "squad_beacons": [],
+  "users": [
     {
-      "_id": "673d001d1111111111111111",
-      "title": "Valorant 5v5 Ranked — Need 2 Players (Ascendant/Diamond)",
-      "venueId": "673d001a1111111111111111",
-      "venueName": "Nexus Arena Esports Hub",
+      "_id": "6b012b559f39fa146c3bf249",
+      "name": "Aditya Sen",
+      "email": "player_1795238741346@gamehub.test",
+      "phone": "+91 98888 77777",
       "city": "Bangalore",
-      "category": "Online Gaming",
-      "game": "Valorant",
-      "date": "2026-11-20",
-      "timeSlot": "06:00 PM - 07:00 PM",
-      "spotsTotal": 5,
-      "spotsNeeded": 2,
-      "hostName": "Kunal Ray",
-      "hostPhone": "+91 98450 11223",
-      "skillLevel": "High Competitive (Diamond+)",
-      "description": "Looking for a reliable Controller and Initiator to grind Premier with low-ping LAN rigs.",
-      "members": [
-        {
-          "name": "Kunal Ray (Host)",
-          "phone": "+91 98450 11223",
-          "joinedAt": "2026-11-20T13:10:54.476Z"
-        },
-        {
-          "name": "Tanmay Bhatt",
-          "phone": "+91 98111 22334",
-          "joinedAt": "2026-11-20T13:40:54.476Z"
-        },
-        {
-          "name": "Rohit Joshi",
-          "phone": "+91 98222 33445",
-          "joinedAt": "2026-11-20T14:10:54.476Z"
-        }
+      "password": "password123",
+      "favoriteGames": [
+        "Valorant",
+        "Volleyball",
+        "Box Cricket"
       ],
-      "status": "Open",
-      "createdAt": "2026-11-20T13:10:54.476Z"
+      "createdAt": "2026-11-21T05:25:41.348Z"
     },
     {
-      "_id": "673d001d2222222222222222",
-      "title": "Volleyball 6v6 Evening Match — Need 3 Attackers/Blockers",
-      "venueId": "673d001a2222222222222222",
-      "venueName": "Smash & Spike Volleyball Complex",
-      "city": "Hyderabad",
-      "category": "Offline Sports",
-      "game": "Volleyball",
-      "date": "2026-11-20",
-      "timeSlot": "07:00 PM - 08:00 PM",
-      "spotsTotal": 6,
-      "spotsNeeded": 3,
-      "hostName": "Sanjay Varma",
-      "hostPhone": "+91 99881 22334",
-      "skillLevel": "Intermediate (Fun & Fast)",
-      "description": "Friendly competitive 6v6 evening volleyball match on championship wooden court.",
-      "members": [
-        {
-          "name": "Sanjay Varma (Host)",
-          "phone": "+91 99881 22334",
-          "joinedAt": "2026-11-20T12:10:54.476Z"
-        },
-        {
-          "name": "Aditya Rao",
-          "phone": "+91 99771 22334",
-          "joinedAt": "2026-11-20T12:40:54.476Z"
-        }
+      "_id": "6b011aff9cbea10ecbb51ff3",
+      "name": "Aman Sharma",
+      "email": "aman@gamehub.demo",
+      "phone": "+91 98201 12345",
+      "city": "Bangalore",
+      "password": "password123",
+      "favoriteGames": [
+        "Valorant",
+        "Counter-Strike 2",
+        "Volleyball"
       ],
-      "status": "Open",
-      "createdAt": "2026-11-20T12:10:54.476Z"
+      "createdAt": "2026-11-21T04:15:59.401Z",
+      "updatedAt": "2026-11-21T04:15:59.401Z",
+      "__v": 0
     },
     {
-      "_id": "673d001d3333333333333333",
-      "title": "FIFA 24 PS5 Pro 2v2 Tournament Practice",
-      "venueId": "673d001a4444444444444444",
-      "venueName": "Titan Turf & Esports Lounge",
+      "_id": "6b011aff9cbea10ecbb51ff7",
+      "name": "Priya Mehta",
+      "email": "priya@gamehub.demo",
+      "phone": "+91 98450 67890",
       "city": "Mumbai",
-      "category": "Online Gaming",
-      "game": "PS5 Pro (FIFA 24)",
-      "date": "2026-11-20",
-      "timeSlot": "08:00 PM - 09:00 PM",
-      "spotsTotal": 4,
-      "spotsNeeded": 1,
-      "hostName": "Sameer Sheikh",
-      "hostPhone": "+91 97555 66778",
-      "skillLevel": "Semi-Pro",
-      "description": "Co-op 2v2 FIFA 24 matches on 75-inch 120Hz screens.",
-      "members": [
-        {
-          "name": "Sameer Sheikh (Host)",
-          "phone": "+91 97555 66778",
-          "joinedAt": "2026-11-20T11:10:54.476Z"
-        },
-        {
-          "name": "Deepak Patel",
-          "phone": "+91 97444 55667",
-          "joinedAt": "2026-11-20T11:50:54.476Z"
-        },
-        {
-          "name": "Farhan Akhtar",
-          "phone": "+91 97333 44556",
-          "joinedAt": "2026-11-20T12:30:54.476Z"
-        }
+      "password": "password123",
+      "favoriteGames": [
+        "PS5",
+        "FIFA / EA FC",
+        "Badminton"
       ],
-      "status": "Open",
-      "createdAt": "2026-11-20T11:10:54.476Z"
+      "createdAt": "2026-11-21T04:15:59.517Z",
+      "updatedAt": "2026-11-21T04:15:59.517Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011aff9cbea10ecbb51ffa",
+      "name": "Rohan Deshmukh",
+      "email": "rohan@gamehub.demo",
+      "phone": "+91 97654 32109",
+      "city": "Bangalore",
+      "password": "password123",
+      "favoriteGames": [
+        "Box Cricket",
+        "Swimming",
+        "Racing Simulator"
+      ],
+      "createdAt": "2026-11-21T04:15:59.537Z",
+      "updatedAt": "2026-11-21T04:15:59.537Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b289cbea10ecbb52016",
+      "name": "Aditya Sen",
+      "email": "player_1795234600563@gamehub.test",
+      "phone": "+91 98888 77777",
+      "city": "Bangalore",
+      "password": "password123",
+      "favoriteGames": [
+        "Valorant",
+        "Volleyball",
+        "Box Cricket"
+      ],
+      "createdAt": "2026-11-21T04:16:40.565Z",
+      "updatedAt": "2026-11-21T04:16:40.565Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011b7f95ebcbd49684edcd",
+      "name": "Aditya Sen",
+      "email": "player_1795234687039@gamehub.test",
+      "phone": "+91 98888 77777",
+      "city": "Bangalore",
+      "password": "password123",
+      "favoriteGames": [
+        "Valorant",
+        "Volleyball",
+        "Box Cricket"
+      ],
+      "createdAt": "2026-11-21T04:18:07.041Z",
+      "updatedAt": "2026-11-21T04:18:07.041Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c1ffb405a5641513bce",
+      "name": "Aditya Sen",
+      "email": "player_1795234847740@gamehub.test",
+      "phone": "+91 98888 77777",
+      "city": "Bangalore",
+      "password": "password123",
+      "favoriteGames": [
+        "Valorant",
+        "Volleyball",
+        "Box Cricket"
+      ],
+      "createdAt": "2026-11-21T04:20:47.742Z",
+      "updatedAt": "2026-11-21T04:20:47.742Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011c3afb405a5641513bd7",
+      "name": "Aditya Sen",
+      "email": "player_1795234874419@gamehub.test",
+      "phone": "+91 98888 77777",
+      "city": "Bangalore",
+      "password": "password123",
+      "favoriteGames": [
+        "Valorant",
+        "Volleyball",
+        "Box Cricket"
+      ],
+      "createdAt": "2026-11-21T04:21:14.421Z",
+      "updatedAt": "2026-11-21T04:21:14.421Z",
+      "__v": 0
+    },
+    {
+      "_id": "6b011f254d4e51dacd433620",
+      "name": "Aditya Sen",
+      "email": "player_1795235621116@gamehub.test",
+      "phone": "+91 98888 77777",
+      "city": "Bangalore",
+      "password": "password123",
+      "favoriteGames": [
+        "Valorant",
+        "Volleyball",
+        "Box Cricket"
+      ],
+      "createdAt": "2026-11-21T04:33:41.122Z",
+      "updatedAt": "2026-11-21T04:33:41.122Z",
+      "__v": 0
     }
   ]
 }

@@ -1,83 +1,88 @@
-# 🎮 GameHub Pro — Unified Gaming & Sports Booking Platform
+# 🎮 GameHub — Unified Gaming & Sports Booking Platform
 
-A full-stack web application designed as a unified booking, live matchmaking, and gate pass management platform for both **Online Gaming Zones** (PC, Console, Mobile) and **Offline Sports Complexes** (Volleyball, Swimming Pool batches, Astro-turf), powered by **Node.js + Express + MongoDB (Mongoose)** and connected to local MongoDB at `mongodb://127.0.0.1:27017/gamehub`.
-
----
-
-## 🌟 Complete Feature Set
-
-### 1. Unified Hubs Discovery (Customer Explore Page)
-- **Minimalist Modern Card-Based UI** on `#F8FAFC` with crisp borders and high-contrast badges:
-  - 🟢 **Green Badges**: Available stations / Empty courts / Open pool batches
-  - 🟡 **Amber Badges**: Held stations (Temporarily locked during checkout)
-  - 🔴 **Red Badges**: Booked stations / Occupied courts
-- **Category Filter Pills**: Quick switch between `[All Hubs]`, `[🎮 Online Gaming]`, and `[⚽ Offline Sports]`.
-- **Location & Search Filter**: City dropdown (Bangalore, Hyderabad, Chennai, Mumbai) and search bar by venue name, game, or area.
-- Direct links to **📍 View on Google Maps** and **📞 Call Owner**.
+A warm, user-friendly full-stack web application designed as a unified booking, live matchmaking, and digital gate pass management platform for both **Online Gaming Zones** (PC, PS5, Racing Simulators, Mobile) and **Offline Sports Complexes** (Volleyball, Swimming Pool batches, Box Cricket, Badminton, Table Tennis, Snooker, Futsal), powered by **Node.js + Express + MongoDB (Mongoose)** connected to local MongoDB at `mongodb://127.0.0.1:27017/gamehub`.
 
 ---
 
-### 🔥 4 Advanced Commercial Features
+## 🌟 Top Navigation Bar & Architecture
 
-#### 📸 Feature 1: Receptionist QR Code Gate Pass Scanner
-- Dedicated **Reception Gate Pass Scanner** built into the top navigation bar.
-- Cafe receptionists and sports complex staff can scan customer QR passes directly or enter booking IDs (e.g. `#GH-84920`).
-- **Instant Gate Validation against MongoDB**:
-  - ✅ **Valid Ticket**: Highlights player details, venue, time slot, reserved seats/courts, and pre-ordered snacks, marking the booking as **`Checked-In`** with an exact timestamp.
-  - ⚠️ **Already Used Ticket**: Flags warning banner indicating the ticket was already scanned.
-  - ❌ **Invalid Ticket**: Prevents unauthorized entry.
-- Automatically records check-in events in the MongoDB `activity_logs` audit trail.
+The application is built on a clean `#F8FAFC` background with rounded friendly cards, intuitive helper text, and high-contrast **Green (Available/Empty)** and **Red (Booked/Occupied)** status badges.
 
-#### 🤝 Feature 2: Squad Finder & Matchmaking Beacon Board
-- Connects local players who need teammates or want to join friendly competitive matches.
-- **Online Gaming Beacons**: Find duos or squads for *Valorant 5v5 Ranked*, *CS2 LAN matches*, or *FIFA PS5 co-op*.
-- **Offline Sports Beacons**: Recruit missing players for *Volleyball 6v6*, *Box Cricket*, or *Morning Swimming Lap batches*.
-- **Features**:
-  - Post custom match beacons with game, venue, match time, skill level, and spots needed.
-  - One-click **"Join Squad"** to register your name and contact phone on the squad roster.
-  - Direct **"Chat with Captain"** link opening WhatsApp chat with the match host.
-  - Persisted in MongoDB `squad_beacons` collection.
-
-#### 🍿 Feature 3: In-Venue F&B Cafe & Snack Bar Menu at Checkout
-- Players can pre-order gaming fuel and sports nutrition snacks during the booking flow:
-  - *Red Bull Energy Drink (250ml)* — ₹125
-  - *Monster Energy Super Fuel (350ml)* — ₹130
-  - *Hot Peri-Peri Cheese Maggi* — ₹75
-  - *Crispy Salted French Fries* — ₹90
-  - *Whey Protein Post-Workout Shake* — ₹150
-  - *Enerzal Electrolyte Sports Drink* — ₹50
-- Real-time cart calculation dynamically adds snack costs to total payable.
-- Pre-ordered items appear on the digital QR ticket pass and reception scan receipt.
-
-#### ⏱️ Feature 4: Real-Time Seat Locking Engine (5-Minute Hold)
-- **BookMyShow-Style Temporary Seat Locking**:
-  - Clicking an available green gaming seat temporarily locks it for **5 minutes (300 seconds)** on the backend.
-  - Displays a live countdown timer: `⏱️ Seats held for your session: 04:59`.
-  - For other players browsing the same date and slot, the seat appears in **Amber/Yellow (`Held by another player`)** and is disabled to eliminate race conditions and double-booking.
-  - If checkout is completed, the lock transitions to permanently **Booked (Red)**. If the session expires or is closed, the lock is automatically released back to **Available (Green)**.
+The top navigation bar provides instant access to 5 primary views & authentication:
+1. **Explore Hubs (Customer Home)**: Discover verified gaming zones and sports complexes with live capacity summaries, distinct Online vs. Offline game badges, sort dropdown (`Highest Rated`, `Most Capacity`, `Price Low/High`, `Newest`), city filters, and direct links to Google Maps and Phone.
+2. **Existing Games Directory**: Complete directory of all supported **Online Games** (`PUBG / BGMI`, `Free Fire`, `Valorant`, `PS5`, `PC Gaming`, `FIFA / EA FC`, `Call of Duty`, `Counter-Strike 2`, `Racing Simulator`) and **Offline Sports** (`Volleyball`, `Swimming`, `Badminton`, `Table Tennis`, `Box Cricket`, `Basketball`, `Snooker / Pool`, `Futsal`) showing which hubs offer each game with direct booking shortcuts.
+3. **My Tickets / Bookings**: Digital pass wallet displaying entry passes with unique `#GH-XXXXX` Booking IDs, visual QR codes, reserved stations/courts, pre-ordered F&B snacks, and **one-click Booking Cancellation** that instantly frees up reserved stations/courts.
+4. **List Your Shop (Owner Portal & Insights)**: 3-step shop onboarding wizard with clickable chips for existing games, live cover photo preview, simulated ₹999/month listing fee checkout, **Live Owner Revenue Insights** (gross revenue, online vs venue breakdown, F&B snack revenue, cancellation count), and real-time court availability toggles (`Empty` / `Occupied`).
+5. **Sign In / User Profile**: Dedicated customer registration, login modal with **1-Click Demo Logins** (Aman, Priya, Rohan), and user profile drawer showing preferred city, favorite game tags, and booking history.
 
 ---
 
-### 2. Interactive Booking Engine
-- **Online Gaming Zones**: Visual gaming station seat map (Row A & Row B) with real-time seat states.
-- **Court-Based Sports (Volleyball)**: Live court status from MongoDB showing *"✅ Court is Empty & Available"* or *"⛔ Court is Occupied"*.
-- **Capacity-Based Activities (Swimming Pool)**: Enforces a strict **Max 10 members per 1-hour batch** limit with a real-time progress bar (e.g. *"6/10 slots filled (4 spots left)"*).
-- **Payment Options**: Customers choose between **⚡ Pay Online (UPI / Card)** or **💵 Pay at Venue (Cash on Arrival)**.
+## 🚀 Key Features
 
----
+### 1. User Registration, Authentication & Profile (Stored in MongoDB)
+- **New Player Registration**: Full Name, Email, Phone, Preferred City, Password, and interactive favorite games chip picker.
+- **Persistent Sessions**: User profile saved in MongoDB `users` collection with local storage session sync.
+- **1-Click Demo Logins**: Instant switch between demo personas:
+  - *Aman Sharma* (Bangalore • PC/Console Gamer)
+  - *Priya Mehta* (Mumbai • FIFA & Sports Athlete)
+  - *Rohan Deshmukh* (Bangalore • Box Cricket & Aquatics)
+- **Auto-Fill Bookings**: Booking modal automatically pre-populates the customer's name and phone number when signed in.
 
-### 3. Digital QR Code Entry Pass
-- Dynamic visual QR Code generated for every booking.
-- Unique `#GH-84920` Booking ID, player name, slot, reserved seats, snacks ordered, and payment badge.
-- One-click **"Print / Save PDF"** button.
-- All bookings persist in MongoDB and can be viewed under the **"My Tickets"** tab with real-time phone/ID search.
+### 2. Unified Hubs Discovery & Multi-Criteria Sorting
+- **Distinct Online & Offline Game Badges**: Every venue card clearly distinguishes between online esports titles (blue badges) and offline sports (emerald badges).
+- **Live Availability Summaries**:
+  - 🟢 **Gaming Zones**: e.g. `24 Stations Ready`
+  - 🟢/🔴 **Court-based Sports (Volleyball/Badminton)**: `Volleyball Court: Empty (Ready)` or `Occupied`
+  - 🟢 **Swimming Pool Batches**: `Swimming: 6/10 Slots Filled (4 spots left)`
+- **Dynamic Sorting Options**:
+  - `Highest Rated ★` (descending review score)
+  - `Most Available Capacity` (descending stations/capacity)
+  - `Price: Low to High` (ascending hourly rate)
+  - `Price: High to Low` (descending hourly rate)
+  - `Newest Hubs First`
+- **Filters**: Category toggle (`All Hubs`, `Online Gaming`, `Offline Sports`), City dropdown (`Bangalore`, `Mumbai`, `Hyderabad`, `Chennai`), and search bar.
 
----
+### 3. Ratings & Quick Reviews System
+- **Customer Reviews**: Logged-in players or visitors can rate any venue (1 to 5 stars) and write comments on gear, ping, court quality, or snacks.
+- **Automatic Score Recalculation**: Backend immediately recalculates the venue's average rating and total review count, persisting to MongoDB `venues.reviews` and `venues.rating`.
+- **Review Badges**: Displayed with amber star badges on all Explore cards with review counts.
 
-### 4. Owner Onboarding & Management ("List Your Shop")
-- **3-Step Wizard**: Shop Details ➔ Game & Capacity Setup ➔ Simulated ₹999/month subscription checkout.
-- New shops are immediately published with `subscriptionStatus: 'Active'` to MongoDB.
-- **Live Court Status Toggle**: Owners can switch court availability between **Empty (Green)** and **Occupied (Red)** with a single click (`PATCH /api/venues/:id/status`), instantly updating customer view and writing to `activity_logs`.
+### 4. Interactive Booking Flow (Online Seats + Offline Courts & Batches)
+- **Online Gaming Zones (BookMyShow-Style Visual Seat Grid)**:
+  - Row A (A1-A12) and Row B (B1-B12) interactive station map.
+  - Live color legend: **Total Seats**, **Available Seats (Green - Clickable)**, **Booked Seats (Red - Disabled)**, **Selected Seats (Blue)**, and **Held Seats (Amber - Temporarily Locked)**.
+  - **Real-Time 5-Minute Seat Hold**: Selecting a seat locks it on the backend for 300 seconds with an animated countdown timer.
+- **Offline Court-Based Sports (Volleyball, Badminton, Box Cricket, etc.)**:
+  - Slot-based availability check displaying *"✅ Court is Empty & Available for this Slot"* in Green or *"⛔ Court is Occupied for this Slot"* in Red.
+- **Capacity-Based Activities (Swimming Pool)**:
+  - Enforces a strict **Max 10 members per 1-hour batch** safety limit with real-time slot progress bar and counter selector.
+- **In-Venue F&B Cafe & Snack Bar Menu**:
+  - Pre-order gamer fuel and sports nutrition during checkout: *Red Bull (₹125)*, *Monster Energy (₹130)*, *Hot Peri-Peri Maggi (₹75)*, *Salted French Fries (₹90)*, *Whey Protein Shake (₹150)*, *Enerzal Drink (₹50)*.
+- **Payment Method Choice**:
+  - `⚡ Pay Online (UPI / Card)`
+  - `💵 Pay at Venue (Cash/UPI at Shop)`
+- **Digital QR Pass**:
+  - Saving a booking generates an entry pass with visual QR code and unique `#GH-XXXXX` ID, stored immediately in MongoDB.
+
+### 5. Booking Cancellation & Instant Slot Liberation
+- Under **My Tickets / Bookings**, users can cancel any confirmed upcoming reservation (`PATCH /api/bookings/:id/cancel`).
+- Automatically updates status to `Cancelled (Refunded)` in MongoDB.
+- **Immediately frees up the seats, swimming spots, or court** in real-time slot availability for other players.
+- Logs the cancellation in `activity_logs` and increments owner insight counters.
+
+### 6. Owner Dashboard, ₹999 Activation & Revenue Insights
+- **Owner Analytics Card**:
+  - **Total Bookings & Active Reservations**
+  - **Gross Revenue & F&B Snacks Revenue**
+  - **Payment Mode Split**: `Pay Online` vs. `Pay at Venue (Pending)`
+  - **Cancelled Reservations Count**
+- **Existing Games Chips**: Clickable chips of all 17 platform games to easily register venue capabilities.
+- **₹999/Month Subscription**: Activating a shop saves the venue to MongoDB with `subscriptionPaid: true` and `subscriptionStatus: 'Active'`, immediately publishing it live.
+- **Live Court Controls**: Owners can toggle court status between `Empty` and `Occupied` (`PATCH /api/venues/:id/status`), instantly updating the public view.
+
+### 7. Receptionist QR Code Gate Pass Scanner
+- Reception staff can scan ticket QR codes or enter Booking IDs (e.g. `#GH-84920`).
+- Validates against MongoDB, checks in the player with an exact timestamp, rejects cancelled tickets, warns against double entry, and records the event in `activity_logs`.
 
 ---
 
@@ -88,37 +93,80 @@ A full-stack web application designed as a unified booking, live matchmaking, an
 mongodb://127.0.0.1:27017/gamehub
 ```
 
-### MongoDB Collections:
-
-1. **`venues`** — Registered hubs, categories, live court status, and ₹999/month active subscriptions.
-2. **`bookings`** — Customer reservations, unique `#GH-...` IDs, seats, pre-ordered F&B snacks, QR code data, and `checkInStatus` (`Booked` / `Checked-In`).
-3. **`activity_logs`** — Audit trail of bookings, reception check-ins, subscription payments, and court status changes.
-4. **`squad_beacons`** — Community matchmaking posts, host details, skill levels, and joined player rosters.
+### Collections & Schemas:
+1. **`users`**:
+   - `name`, `email`, `phone`, `city`, `password`, `favoriteGames`, `createdAt`
+2. **`venues`**:
+   - `shopName`, `ownerName`, `phone`, `city`, `address`, `mapUrl`, `image`
+   - `category`: `'Online Gaming' | 'Offline Sports' | 'Both'`
+   - `gamesOffered`: Array of game names
+   - `pricePerHour`: Hourly rate
+   - `totalCapacity`: Number of stations or batch limit
+   - `courtStatus`: `'Empty' | 'Occupied'`
+   - `rating`: Recalculated average score
+   - `reviewCount`: Total reviews
+   - `reviews`: Subdocuments with `userName`, `userId`, `rating`, `comment`, `createdAt`
+   - `subscriptionStatus`: `'Active'`, `subscriptionPaid`: `true`, `subscriptionFee`: `999`
+3. **`bookings`**:
+   - `bookingId`: Unique ticket ID (e.g. `#GH-84920`)
+   - `userId`: Optional reference to User
+   - `venueId`: Reference to Venue
+   - `playerName`, `phone`, `date`, `timeSlot`
+   - `seats`: Array of station IDs (e.g. `['A1', 'A2']`)
+   - `spotsCount`: Number of spots reserved
+   - `snacks`: Array of pre-ordered items with quantities
+   - `snacksTotal`, `totalAmount`
+   - `paymentMethod`: `'Pay Online' | 'Pay at Venue'`
+   - `paymentStatus`: `'Paid Online' | 'Pay at Venue (Pending)' | 'Refunded'`
+   - `status`: `'Confirmed' | 'Cancelled'`
+   - `checkInStatus`: `'Booked' | 'Checked-In'`
+   - `qrCodeData`: Base64 data URL QR code
+4. **`activity_logs`**:
+   - Audit trail of user registrations, logins, reviews, shop registrations, ₹999 subscription activations, bookings, cancellations, reception check-ins, and court status changes with timestamps.
+5. **`squad_beacons`**:
+   - Matchmaking posts, captains, game titles, spots needed, and joined player rosters.
 
 ---
 
 ## 🚀 Setup & Run Instructions
 
+### 1. Start Local MongoDB Daemon
+Ensure MongoDB is running locally on port 27017:
 ```powershell
-# 1. Navigate to project directory
-cd C:\Users\SHANKAR\Downloads\gamehub
-
-# 2. Start the application
-npm start
+& "C:\Program Files\MongoDB\Server\8.2\bin\mongod.exe" --dbpath "c:\Users\navad\.cache\Desktop\GameHub\Game-hub-\data\db" --bind_ip 127.0.0.1 --port 27017
 ```
 
-Open your browser to:
+### 2. Install Dependencies & Run
+From the project directory:
+```powershell
+cd Game-hub-
+npm install
+node server.js
+```
+*(Or from workspace root: `npm start`)*
+
+### 3. Open in Browser
+Visit:
 👉 **[http://localhost:5000](http://localhost:5000)**
 
 ---
 
-## 🔍 Inspecting in MongoDB Compass
+## 📋 Comprehensive Testing Checklist (26/26 Tests Passing)
 
-1. Launch **MongoDB Compass**.
-2. Connect to: `mongodb://127.0.0.1:27017`
-3. Select the **`gamehub`** database from the left sidebar.
-4. Inspect the collections:
-   - 📁 **`venues`**
-   - 📁 **`bookings`**
-   - 📁 **`activity_logs`**
-   - 📁 **`squad_beacons`**
+Run the automated verification suite anytime:
+```powershell
+node verify_gamehub.js
+```
+
+### Manual Verification Checklist:
+- [x] **MongoDB Live Connection**: Green pill `MongoDB: 127.0.0.1:27017` displayed in navbar.
+- [x] **User Registration**: Create account with full name, email, phone, city, and favorite games chips.
+- [x] **1-Click Demo Login**: Click Aman Sharma or Priya Mehta to auto-fill credentials and populate user avatar.
+- [x] **Explore Hubs & Sorting**: Sort venues by rating, capacity, and price; filter by city and game.
+- [x] **Existing Games Tab**: Browse 17 online and offline games; click any game to jump to hubs offering it.
+- [x] **BookMyShow Seat Grid**: Select seats A1-A12 or B1-B12 with 5-minute hold timer; pre-order F&B snacks.
+- [x] **Digital QR Pass**: Confirm booking; verify pass displays `#GH-XXXXX` and QR code.
+- [x] **Cancel Booking**: In My Tickets, click "Cancel" to free up the seats in MongoDB availability.
+- [x] **Leave a Review**: Rate a hub 1-5 stars; verify average rating recalculates live.
+- [x] **Owner Portal**: Register shop with clickable chips and ₹999 fee; toggle court status; review revenue insights.
+- [x] **Gate Pass Scanner**: Scan or enter `#GH-84920` to verify admission with live timestamp.

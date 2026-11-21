@@ -246,6 +246,56 @@ body {
   background-color: #F8FAFC;
 }
 
+/* Game Selection Chips */
+.game-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #E2E8F0;
+  background-color: #FFFFFF;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.game-chip:hover {
+  border-color: #3B82F6;
+  background-color: #EFF6FF;
+  color: #1D4ED8;
+}
+
+.game-chip.active {
+  background-color: #2563EB;
+  border-color: #1D4ED8;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.25);
+}
+
+.game-chip.active-offline {
+  background-color: #059669;
+  border-color: #047857;
+  color: #FFFFFF;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.25);
+}
+
+/* Category Badge Pills */
+.tag-online {
+  background-color: #EFF6FF;
+  border: 1px solid #BFDBFE;
+  color: #1D4ED8;
+}
+
+.tag-offline {
+  background-color: #ECFDF5;
+  border: 1px solid #A7F3D0;
+  color: #047857;
+}
+
 /* Print styling for digital tickets */
 @media print {
   body * {

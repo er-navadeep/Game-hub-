@@ -1,5 +1,36 @@
 const mongoose = require('mongoose');
 
+const reviewSchema = new mongoose.Schema({
+  _id: {
+    type: mongoose.Schema.Types.Mixed,
+    default: () => new mongoose.Types.ObjectId()
+  },
+  userName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  userId: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
+  rating: {
+    type: Number,
+    required: true,
+    min: 1,
+    max: 5
+  },
+  comment: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
+}, { _id: false });
+
 const venueSchema = new mongoose.Schema({
   shopName: {
     type: String,
@@ -51,7 +82,7 @@ const venueSchema = new mongoose.Schema({
   totalCapacity: {
     type: Number,
     required: true,
-    default: 20 // Represents seats for gaming cafes or hourly capacity limit for sports
+    default: 20
   },
   courtStatus: {
     type: String,
@@ -67,6 +98,10 @@ const venueSchema = new mongoose.Schema({
     type: Number,
     default: 999
   },
+  subscriptionPaid: {
+    type: Boolean,
+    default: true
+  },
   subscriptionPaidAt: {
     type: Date,
     default: Date.now
@@ -78,6 +113,14 @@ const venueSchema = new mongoose.Schema({
   rating: {
     type: Number,
     default: 4.8
+  },
+  reviewCount: {
+    type: Number,
+    default: 0
+  },
+  reviews: {
+    type: [reviewSchema],
+    default: []
   },
   createdAt: {
     type: Date,

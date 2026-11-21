@@ -11,7 +11,7 @@ const activityLogSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['venue', 'booking', 'court_status', 'subscription', 'system'],
+    enum: ['user', 'venue', 'booking', 'court_status', 'subscription', 'review', 'system'],
     default: 'system'
   },
   meta: {

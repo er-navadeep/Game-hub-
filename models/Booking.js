@@ -14,9 +14,12 @@ const bookingSchema = new mongoose.Schema({
     unique: true,
     trim: true
   },
+  userId: {
+    type: mongoose.Schema.Types.Mixed,
+    default: null
+  },
   venueId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue',
+    type: mongoose.Schema.Types.Mixed,
     required: true
   },
   venueName: {
@@ -47,11 +50,11 @@ const bookingSchema = new mongoose.Schema({
   },
   seats: {
     type: [String],
-    default: [] // e.g. ['A1', 'A2']
+    default: []
   },
   spotsCount: {
     type: Number,
-    default: 1 // for swimming pool slots or court reservation
+    default: 1
   },
   courtStatusAtBooking: {
     type: String,
@@ -72,12 +75,17 @@ const bookingSchema = new mongoose.Schema({
   },
   paymentStatus: {
     type: String,
-    enum: ['Paid Online', 'Pay at Venue (Pending)', 'Completed'],
+    enum: ['Paid Online', 'Pay at Venue (Pending)', 'Completed', 'Refunded'],
     default: 'Paid Online'
+  },
+  status: {
+    type: String,
+    enum: ['Confirmed', 'Cancelled'],
+    default: 'Confirmed'
   },
   checkInStatus: {
     type: String,
-    enum: ['Booked', 'Checked-In'],
+    enum: ['Booked', 'Checked-In', 'Cancelled'],
     default: 'Booked'
   },
   checkInTime: {

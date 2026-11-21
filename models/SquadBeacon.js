@@ -7,8 +7,8 @@ const squadBeaconSchema = new mongoose.Schema({
     trim: true
   },
   venueId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Venue'
+    type: mongoose.Schema.Types.Mixed,
+    default: null
   },
   venueName: {
     type: String,

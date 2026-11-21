@@ -1,14 +1,44 @@
 /**
- * GameHub Pro — Unified Booking Platform Controller
+ * GameHub — Unified Booking Platform Controller
+ * Node.js + Express + MongoDB (Mongoose) Localhost: mongodb://127.0.0.1:27017/gamehub
  * 
  * Features:
  * 1. Receptionist QR Code Scanner & Check-in Verification
- * 2. Squad Finder & Matchmaking Beacon Board
+ * 2. Existing Games Directory (All Online & Offline Games)
  * 3. In-Venue F&B Cafe & Snack Bar Menu at Checkout
  * 4. Real-time Seat Locking Engine (5-minute auto-release)
+ * 5. Squad Finder & Matchmaking Beacon Board
+ * 6. User Authentication, Demo Logins & Profile Management
+ * 7. Rating & Review System with Live Score Recalculation
+ * 8. Booking Cancellation & Instant Slot Liberation
+ * 9. Real-Time Owner Analytics & Revenue Insights
  */
 
-// Unique client session ID for seat locking
+// Master Lists of Standard Online and Offline Games
+const ALL_ONLINE_GAMES = [
+  'PUBG / BGMI',
+  'Free Fire',
+  'Valorant',
+  'PS5',
+  'PC Gaming',
+  'FIFA / EA FC',
+  'Call of Duty',
+  'Counter-Strike 2',
+  'Racing Simulator'
+];
+
+const ALL_OFFLINE_GAMES = [
+  'Volleyball',
+  'Swimming',
+  'Badminton',
+  'Table Tennis',
+  'Box Cricket',
+  'Basketball',
+  'Snooker / Pool',
+  'Futsal'
+];
+
+// Unique client session ID for real-time seat locking
 let CLIENT_SESSION_ID = localStorage.getItem('gh_client_session_id');
 if (!CLIENT_SESSION_ID) {
   CLIENT_SESSION_ID = 'sess_' + Math.random().toString(36).substring(2, 10) + Date.now();
@@ -24,30 +54,6 @@ const SNACK_MENU = [
   { id: 'snk_5', name: 'Whey Protein Post-Workout Shake', price: 150, desc: '25g protein recovery shake', icon: 'dumbbell' },
   { id: 'snk_6', name: 'Enerzal Electrolyte Citrus Drink', price: 50, desc: 'Hydration for intense sports matches', icon: 'droplet' }
 ];
-
-// Application State
-const state = {
-  currentView: 'explore',
-  venues: [],
-  filteredVenues: [],
-  categoryFilter: 'All',
-  cityFilter: 'All',
-  searchQuery: '',
-  allBookings: [],
-  squads: [],
-  squadCategoryFilter: 'All',
-  currentBookingVenue: null,
-  selectedDate: '',
-  selectedSlot: '05:00 PM - 06:00 PM',
-  selectedSeats: [],
-  selectedSnacks: {}, // { snk_1: 2, snk_3: 1 }
-  swimmingSpots: 1,
-  currentAvailability: null,
-  seatLockTimer: null,
-  seatLockRemainingSeconds: 300,
-  joiningSquad: null,
-  dbStatus: { connected: false, message: 'Connecting...' }
-};
 
 // Available hourly slots
 const HOURLY_SLOTS = [
@@ -65,6 +71,40 @@ const HOURLY_SLOTS = [
   '08:00 PM - 09:00 PM'
 ];
 
+// Application State
+const state = {
+  currentView: 'explore',
+  currentUser: null,
+  venues: [],
+  filteredVenues: [],
+  categoryFilter: 'All',
+  cityFilter: 'All',
+  searchQuery: '',
+  activeGameFilter: null,
+  gamesData: { allGames: [], onlineGames: [], offlineGames: [] },
+  gamesCategoryFilter: 'All',
+  gamesSearchQuery: '',
+  selectedOwnerGames: new Set(),
+  selectedFavGames: new Set(),
+  uploadedOwnerImagePreview: '',
+  allBookings: [],
+  squads: [],
+  squadCategoryFilter: 'All',
+  currentBookingVenue: null,
+  selectedDate: '',
+  selectedSlot: '05:00 PM - 06:00 PM',
+  selectedSeats: [],
+  selectedSnacks: {},
+  swimmingSpots: 1,
+  currentAvailability: null,
+  seatLockTimer: null,
+  seatLockRemainingSeconds: 300,
+  joiningSquad: null,
+  currentReviewVenueId: null,
+  reviewStarRating: 5,
+  dbStatus: { connected: false, message: 'Connecting...' }
+};
+
 function getDateOffset(days = 0) {
   const d = new Date();
   d.setDate(d.getDate() + days);
@@ -78,21 +118,35 @@ function getDateOffset(days = 0) {
 // INITIALIZATION
 // ==========================================
 document.addEventListener('DOMContentLoaded', async () => {
+  // Load persisted user if any
+  try {
+    const saved = localStorage.getItem('gh_user');
+    if (saved) {
+      state.currentUser = JSON.parse(saved);
+    }
+  } catch (e) {
+    state.currentUser = null;
+  }
+
+  updateNavAuthUI();
+  renderRegFavoriteGamesChips();
+
   state.selectedDate = getDateOffset(0);
   const dateInput = document.getElementById('bookingCustomDate');
   if (dateInput) dateInput.value = state.selectedDate;
 
-  // Initialize Lucide icons
+  renderOwnerGameChips();
+
   if (window.lucide) lucide.createIcons();
 
-  // Initial fetches
   await checkDbStatus();
   await fetchVenues();
+  await fetchGames();
   await fetchBookings();
   await fetchSquads();
   await fetchActivityLogsMini();
+  await fetchOwnerInsights();
 
-  // Periodic refresh
   setInterval(checkDbStatus, 15000);
 });
 
@@ -107,13 +161,13 @@ async function checkDbStatus() {
     const text = document.getElementById('dbStatusText');
 
     if (data.dbConnected) {
-      pill.className = 'flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] font-semibold text-emerald-800 shadow-sm';
+      pill.className = 'flex items-center space-x-1.5 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] font-semibold text-emerald-800 shadow-sm';
       text.innerText = 'MongoDB: 127.0.0.1:27017';
       pill.title = `Connected to local MongoDB (${data.mongoUri})`;
     } else {
-      pill.className = 'flex items-center space-x-1.5 px-2.5 py-1 bg-amber-50 border border-amber-200 rounded-full text-[11px] font-semibold text-amber-800 shadow-sm';
+      pill.className = 'flex items-center space-x-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-[11px] font-semibold text-amber-800 shadow-sm';
       text.innerText = 'Local Persistence Active';
-      pill.title = data.dbStatusMessage || 'Local storage active';
+      pill.title = data.dbStatusMessage || 'Active local persistence mode';
     }
   } catch (err) {
     console.warn('Status check failed:', err.message);
@@ -121,12 +175,12 @@ async function checkDbStatus() {
 }
 
 // ==========================================
-// NAVIGATION
+// NAVIGATION (5 CORE TABS + MODALS)
 // ==========================================
 function navigate(viewName) {
   state.currentView = viewName;
 
-  const views = ['explore', 'squads', 'tickets', 'owner'];
+  const views = ['explore', 'games', 'tickets', 'owner', 'squads'];
   views.forEach(v => {
     const el = document.getElementById(`view-${v}`);
     const navBtn = document.getElementById(`nav-${v}`);
@@ -134,41 +188,320 @@ function navigate(viewName) {
     if (v === viewName) {
       if (el) el.classList.remove('hidden');
       if (navBtn) {
-        navBtn.className = 'px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all flex items-center space-x-1.5 text-blue-600 bg-blue-50';
+        navBtn.className = 'px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all flex items-center space-x-1.5 text-blue-600 bg-blue-50';
       }
     } else {
       if (el) el.classList.add('hidden');
       if (navBtn) {
-        navBtn.className = 'px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center space-x-1.5';
+        navBtn.className = 'px-3.5 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center space-x-1.5';
       }
     }
   });
 
   if (viewName === 'explore') fetchVenues();
-  if (viewName === 'squads') fetchSquads();
+  if (viewName === 'games') fetchGames();
   if (viewName === 'tickets') fetchBookings();
   if (viewName === 'owner') {
     fetchOwnerVenues();
     fetchActivityLogsMini();
+    fetchOwnerInsights();
   }
+  if (viewName === 'squads') fetchSquads();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 
   if (window.lucide) lucide.createIcons();
 }
 
 function toggleMobileMenu() {
   const m = document.getElementById('mobileMenu');
-  m.classList.toggle('hidden');
+  if (m) m.classList.toggle('hidden');
 }
 
 // ==========================================
-// EXPLORE HUBS & FILTERS
+// USER AUTHENTICATION & PROFILE SYSTEM
+// ==========================================
+function updateNavAuthUI() {
+  const navLoggedOut = document.getElementById('authNavLoggedOut');
+  const navLoggedIn = document.getElementById('authNavLoggedIn');
+  const navUserInitial = document.getElementById('navUserInitial');
+  const navUserName = document.getElementById('navUserName');
+
+  const mobileLoggedOut = document.getElementById('authMobileLoggedOut');
+  const mobileLoggedIn = document.getElementById('authMobileLoggedIn');
+  const mobileUserName = document.getElementById('mobileUserName');
+
+  if (state.currentUser) {
+    const firstName = (state.currentUser.name || 'Player').split(' ')[0];
+    const initial = (state.currentUser.name || 'P')[0].toUpperCase();
+
+    if (navLoggedOut) navLoggedOut.classList.add('hidden');
+    if (navLoggedIn) navLoggedIn.classList.remove('hidden');
+    if (navUserInitial) navUserInitial.innerText = initial;
+    if (navUserName) navUserName.innerText = firstName;
+
+    if (mobileLoggedOut) mobileLoggedOut.classList.add('hidden');
+    if (mobileLoggedIn) mobileLoggedIn.classList.remove('hidden');
+    if (mobileUserName) mobileUserName.innerText = firstName;
+  } else {
+    if (navLoggedOut) navLoggedOut.classList.remove('hidden');
+    if (navLoggedIn) navLoggedIn.classList.add('hidden');
+
+    if (mobileLoggedOut) mobileLoggedOut.classList.remove('hidden');
+    if (mobileLoggedIn) mobileLoggedIn.classList.add('hidden');
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function openAuthModal(defaultTab = 'login') {
+  switchAuthTab(defaultTab);
+  const modal = document.getElementById('authModal');
+  if (modal) modal.classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeAuthModal() {
+  const modal = document.getElementById('authModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function switchAuthTab(tab) {
+  const tabLogin = document.getElementById('authTabBtnLogin');
+  const tabRegister = document.getElementById('authTabBtnRegister');
+  const formLogin = document.getElementById('loginForm');
+  const formRegister = document.getElementById('registerForm');
+  const title = document.getElementById('authModalTitle');
+
+  if (tab === 'login') {
+    if (tabLogin) tabLogin.className = 'flex-1 py-3 text-center text-blue-600 border-b-2 border-blue-600 bg-white';
+    if (tabRegister) tabRegister.className = 'flex-1 py-3 text-center text-slate-500 hover:text-slate-800';
+    if (formLogin) formLogin.classList.remove('hidden');
+    if (formRegister) formRegister.classList.add('hidden');
+    if (title) title.innerText = 'Sign In to GameHub';
+  } else {
+    if (tabLogin) tabLogin.className = 'flex-1 py-3 text-center text-slate-500 hover:text-slate-800';
+    if (tabRegister) tabRegister.className = 'flex-1 py-3 text-center text-emerald-600 border-b-2 border-emerald-600 bg-white';
+    if (formLogin) formLogin.classList.add('hidden');
+    if (formRegister) formRegister.classList.remove('hidden');
+    if (title) title.innerText = 'Create Player Account';
+  }
+}
+
+function renderRegFavoriteGamesChips() {
+  const container = document.getElementById('regFavoriteGamesChips');
+  if (!container) return;
+
+  const all = [...ALL_ONLINE_GAMES, ...ALL_OFFLINE_GAMES];
+  container.innerHTML = all.map(g => {
+    const isSelected = state.selectedFavGames.has(g);
+    return `
+      <button type="button" onclick="toggleRegFavGameChip('${g}')" class="px-2 py-1 rounded-lg text-[10px] font-semibold border transition ${
+        isSelected
+          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+          : 'bg-white text-slate-600 border-slate-200 hover:border-slate-400'
+      }">
+        ${isSelected ? '✓ ' : ''}${g}
+      </button>
+    `;
+  }).join('');
+}
+
+function toggleRegFavGameChip(game) {
+  if (state.selectedFavGames.has(game)) {
+    state.selectedFavGames.delete(game);
+  } else {
+    state.selectedFavGames.add(game);
+  }
+  renderRegFavoriteGamesChips();
+}
+
+async function demoLogin(key) {
+  let email = 'aman@gamehub.demo';
+  if (key === 'priya') email = 'priya@gamehub.demo';
+  if (key === 'rohan') email = 'rohan@gamehub.demo';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: 'password123' })
+    });
+    const data = await res.json();
+    if (data.success) {
+      state.currentUser = data.user;
+      localStorage.setItem('gh_user', JSON.stringify(data.user));
+      updateNavAuthUI();
+      closeAuthModal();
+
+      // If booking modal is open, auto-fill credentials
+      const pName = document.getElementById('bmPlayerName');
+      const pPhone = document.getElementById('bmPlayerPhone');
+      if (pName && !pName.value) pName.value = data.user.name;
+      if (pPhone && !pPhone.value) pPhone.value = data.user.phone;
+
+      alert(`👋 Welcome back, ${data.user.name}! You are now signed in to GameHub.`);
+    } else {
+      alert(`Demo login failed: ${data.error || 'Server error'}`);
+    }
+  } catch (err) {
+    alert(`Demo login error: ${err.message}`);
+  }
+}
+
+async function handleLoginSubmit(e) {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+  const btn = document.getElementById('loginSubmitBtn');
+
+  if (!email || !password) return alert('Please enter both email and password.');
+
+  btn.disabled = true;
+  btn.innerHTML = 'Signing In...';
+
+  try {
+    const res = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (data.success) {
+      state.currentUser = data.user;
+      localStorage.setItem('gh_user', JSON.stringify(data.user));
+      updateNavAuthUI();
+      closeAuthModal();
+
+      const pName = document.getElementById('bmPlayerName');
+      const pPhone = document.getElementById('bmPlayerPhone');
+      if (pName && !pName.value) pName.value = data.user.name;
+      if (pPhone && !pPhone.value) pPhone.value = data.user.phone;
+
+      alert(`👋 Welcome back, ${data.user.name}!`);
+    } else {
+      alert(`Login failed: ${data.error || 'Invalid credentials'}`);
+    }
+  } catch (err) {
+    alert(`Login error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Sign In';
+  }
+}
+
+async function handleRegisterSubmit(e) {
+  e.preventDefault();
+  const name = document.getElementById('regUserName').value.trim();
+  const email = document.getElementById('regUserEmail').value.trim();
+  const phone = document.getElementById('regUserPhone').value.trim();
+  const city = document.getElementById('regUserCity').value;
+  const password = document.getElementById('regUserPassword').value.trim();
+  const btn = document.getElementById('regUserSubmitBtn');
+
+  if (!name || !email || !phone || !password) {
+    return alert('Please fill in all required fields.');
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = 'Creating Account in MongoDB...';
+
+  const favoriteGames = Array.from(state.selectedFavGames);
+
+  try {
+    const res = await fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, city, password, favoriteGames })
+    });
+    const data = await res.json();
+    if (data.success) {
+      state.currentUser = data.user;
+      localStorage.setItem('gh_user', JSON.stringify(data.user));
+      updateNavAuthUI();
+      closeAuthModal();
+
+      const pName = document.getElementById('bmPlayerName');
+      const pPhone = document.getElementById('bmPlayerPhone');
+      if (pName) pName.value = data.user.name;
+      if (pPhone) pPhone.value = data.user.phone;
+
+      alert(`🎉 Account created successfully in MongoDB!\nWelcome to GameHub, ${data.user.name}!`);
+    } else {
+      alert(`Registration failed: ${data.error || 'Server error'}`);
+    }
+  } catch (err) {
+    alert(`Registration error: ${err.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Create Account in MongoDB';
+  }
+}
+
+function handleLogout() {
+  localStorage.removeItem('gh_user');
+  state.currentUser = null;
+  updateNavAuthUI();
+  closeUserProfileModal();
+  alert('You have been signed out.');
+}
+
+function openUserProfileModal() {
+  if (!state.currentUser) {
+    openAuthModal('login');
+    return;
+  }
+
+  const u = state.currentUser;
+  const initial = (u.name || 'P')[0].toUpperCase();
+
+  const elAvatar = document.getElementById('profAvatar');
+  const elName = document.getElementById('profName');
+  const elEmail = document.getElementById('profEmail');
+  const elPhone = document.getElementById('profPhone');
+  const elCity = document.getElementById('profCity');
+  const elGames = document.getElementById('profGamesList');
+
+  if (elAvatar) elAvatar.innerText = initial;
+  if (elName) elName.innerText = u.name;
+  if (elEmail) elEmail.innerText = u.email;
+  if (elPhone) elPhone.innerText = u.phone || 'Not provided';
+  if (elCity) elCity.innerText = u.city || 'Bangalore';
+
+  if (elGames) {
+    const games = Array.isArray(u.favoriteGames) && u.favoriteGames.length > 0
+      ? u.favoriteGames
+      : ['PUBG / BGMI', 'Box Cricket'];
+    elGames.innerHTML = games.map(g =>
+      `<span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 border border-blue-200">${g}</span>`
+    ).join(' ');
+  }
+
+  const modal = document.getElementById('userProfileModal');
+  if (modal) modal.classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeUserProfileModal() {
+  const modal = document.getElementById('userProfileModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+// ==========================================
+// 1. EXPLORE HUBS & VENUE CARDS
 // ==========================================
 async function fetchVenues() {
   try {
     const params = new URLSearchParams();
     if (state.categoryFilter !== 'All') params.append('category', state.categoryFilter);
     if (state.cityFilter !== 'All') params.append('city', state.cityFilter);
+    if (state.activeGameFilter) params.append('game', state.activeGameFilter);
     if (state.searchQuery.trim()) params.append('search', state.searchQuery.trim());
+
+    const sortEl = document.getElementById('sortFilter');
+    if (sortEl && sortEl.value) {
+      params.append('sort', sortEl.value);
+    }
 
     const res = await fetch(`/api/venues?${params.toString()}`);
     const data = await res.json();
@@ -187,14 +520,26 @@ function renderVenues(venues) {
   const noVenues = document.getElementById('noVenuesNotice');
   const countText = document.getElementById('venueCountText');
 
-  countText.innerText = venues.length;
+  if (countText) countText.innerText = venues.length;
+
+  // Active game banner
+  const filterBanner = document.getElementById('activeGameFilterBanner');
+  const filterGameName = document.getElementById('activeGameFilterName');
+  if (state.activeGameFilter) {
+    if (filterBanner) filterBanner.classList.remove('hidden');
+    if (filterGameName) filterGameName.innerText = state.activeGameFilter;
+  } else {
+    if (filterBanner) filterBanner.classList.add('hidden');
+  }
 
   if (venues.length === 0) {
-    grid.innerHTML = '';
-    noVenues.classList.remove('hidden');
+    if (grid) grid.innerHTML = '';
+    if (noVenues) noVenues.classList.remove('hidden');
     return;
   }
-  noVenues.classList.add('hidden');
+  if (noVenues) noVenues.classList.add('hidden');
+
+  if (!grid) return;
 
   grid.innerHTML = venues.map(venue => {
     const isOnline = venue.category === 'Online Gaming';
@@ -202,12 +547,43 @@ function renderVenues(venues) {
     const isOffline = venue.category === 'Offline Sports';
 
     const categoryBadgeClass = isOnline
-      ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
+      ? 'bg-blue-50 text-blue-700 border-blue-200'
       : (isOffline ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-purple-50 text-purple-700 border-purple-200');
 
+    // Separate Online vs Offline Games offered at this venue
+    const gamesList = Array.isArray(venue.gamesOffered) ? venue.gamesOffered : [];
+    const onlineGamesHere = [];
+    const offlineGamesHere = [];
+
+    gamesList.forEach(g => {
+      const gLower = g.toLowerCase();
+      const isOff = ALL_OFFLINE_GAMES.some(og => gLower.includes(og.toLowerCase()) || og.toLowerCase().includes(gLower));
+      if (isOff) {
+        offlineGamesHere.push(g);
+      } else {
+        onlineGamesHere.push(g);
+      }
+    });
+
+    const onlineBadges = onlineGamesHere.map(g =>
+      `<span class="tag-online text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1" title="Online Game">
+        <i data-lucide="monitor" class="w-3 h-3 text-blue-500"></i>
+        <span>${g}</span>
+      </span>`
+    ).join(' ');
+
+    const offlineBadges = offlineGamesHere.map(g =>
+      `<span class="tag-offline text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center space-x-1" title="Offline Sport">
+        <i data-lucide="trophy" class="w-3 h-3 text-emerald-600"></i>
+        <span>${g}</span>
+      </span>`
+    ).join(' ');
+
+    // Live Availability Summary calculation
     let availabilityBadgeHtml = '';
-    const isSwimming = venue.gamesOffered && venue.gamesOffered.some(g => g.toLowerCase().includes('swim'));
-    const isVolleyball = venue.gamesOffered && venue.gamesOffered.some(g => g.toLowerCase().includes('volley'));
+    const isSwimming = gamesList.some(g => g.toLowerCase().includes('swim'));
+    const isVolleyball = gamesList.some(g => g.toLowerCase().includes('volley'));
+    const isCourtSport = isOffline && !isSwimming;
 
     if (isOnline) {
       availabilityBadgeHtml = `
@@ -220,38 +596,44 @@ function renderVenues(venues) {
       availabilityBadgeHtml = `
         <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-bold badge-available">
           <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Max 10 / Batch (Slots Available)</span>
+          <span>Swimming: 6/10 Slots Filled (4 spots left)</span>
         </span>
       `;
-    } else if (isVolleyball) {
+    } else if (isVolleyball || isCourtSport) {
       const isCourtEmpty = venue.courtStatus === 'Empty';
+      const courtLabel = isVolleyball ? 'Volleyball Court' : (gamesList[0] || 'Court');
       availabilityBadgeHtml = isCourtEmpty
         ? `
           <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-bold badge-available">
             <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-            <span>Volleyball: Empty (Ready)</span>
+            <span>${courtLabel}: Empty (Ready)</span>
           </span>
         `
         : `
           <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-bold badge-occupied">
             <span class="w-2 h-2 rounded-full bg-rose-500"></span>
-            <span>Volleyball: Occupied</span>
+            <span>${courtLabel}: Occupied</span>
           </span>
         `;
-    } else {
+    } else if (isBoth) {
+      const isCourtEmpty = venue.courtStatus === 'Empty';
       availabilityBadgeHtml = `
-        <span class="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded-full text-xs font-bold badge-available">
-          <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-          <span>Open for Booking</span>
-        </span>
+        <div class="flex flex-col gap-1">
+          <span class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold badge-available">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+            <span>16 Stations Ready</span>
+          </span>
+          <span class="inline-flex items-center space-x-1.5 px-2 py-0.5 rounded-full text-[11px] font-bold ${isCourtEmpty ? 'badge-available' : 'badge-occupied'}">
+            <span class="w-1.5 h-1.5 rounded-full ${isCourtEmpty ? 'bg-emerald-500' : 'bg-rose-500'}"></span>
+            <span>Court: ${isCourtEmpty ? 'Empty (Ready)' : 'Occupied'}</span>
+          </span>
+        </div>
       `;
     }
 
-    const gamesTags = (venue.gamesOffered || []).slice(0, 4).map(g =>
-      `<span class="text-[11px] font-semibold bg-slate-100 text-slate-700 px-2 py-0.5 rounded-md border border-slate-200">${g}</span>`
-    ).join(' ');
-
     const mapLink = venue.mapUrl || `https://maps.google.com/?q=${encodeURIComponent(venue.shopName + ' ' + venue.city)}`;
+    const reviewCount = venue.reviewCount !== undefined ? venue.reviewCount : (venue.reviews ? venue.reviews.length : 0);
+    const ratingDisplay = Number(venue.rating || 4.8).toFixed(1);
 
     return `
       <div class="gamehub-card overflow-hidden flex flex-col justify-between">
@@ -267,7 +649,8 @@ function renderVenues(venues) {
             </div>
             <div class="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-2 py-0.5 rounded-lg text-xs font-bold text-slate-800 shadow-sm flex items-center space-x-1">
               <i data-lucide="star" class="w-3.5 h-3.5 text-amber-500 fill-amber-500"></i>
-              <span>${venue.rating || 4.9}</span>
+              <span>${ratingDisplay}</span>
+              <span class="text-[10px] text-slate-500 font-normal">(${reviewCount})</span>
             </div>
           </div>
 
@@ -296,16 +679,17 @@ function renderVenues(venues) {
               <a href="tel:${venue.phone}" class="hover:text-blue-600 font-medium">${venue.phone}</a>
             </div>
 
-            <!-- Games Tags -->
-            <div class="flex flex-wrap gap-1.5 pt-1">
-              ${gamesTags}
+            <!-- Distinct Online and Offline Games Badges (FEATURE REQUIREMENT) -->
+            <div class="space-y-1.5 pt-1">
+              ${onlineBadges ? `<div class="flex flex-wrap gap-1">${onlineBadges}</div>` : ''}
+              ${offlineBadges ? `<div class="flex flex-wrap gap-1">${offlineBadges}</div>` : ''}
             </div>
 
-            <!-- Live Status Badge -->
-            <div class="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <!-- Live Status Summary -->
+            <div class="pt-3 border-t border-slate-100 flex items-center justify-between">
               <div>${availabilityBadgeHtml}</div>
               <div class="text-right">
-                <span class="text-xs text-slate-400 block text-[10px] uppercase font-semibold">Price</span>
+                <span class="text-xs text-slate-400 block text-[10px] uppercase font-semibold">Rate</span>
                 <span class="text-sm font-black text-slate-900">₹${venue.pricePerHour}<span class="text-xs font-normal text-slate-500">/hr</span></span>
               </div>
             </div>
@@ -314,10 +698,15 @@ function renderVenues(venues) {
         </div>
 
         <!-- Card Action CTA -->
-        <div class="p-5 pt-0">
+        <div class="p-5 pt-0 space-y-2">
           <button onclick="openBookingModal('${venue._id}')" class="w-full py-2.5 px-4 bg-slate-900 hover:bg-blue-600 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm flex items-center justify-center space-x-2">
             <i data-lucide="calendar" class="w-4 h-4"></i>
             <span>Book Slot & Stations</span>
+          </button>
+          
+          <button onclick="openReviewModal('${venue._id}')" class="w-full py-1.5 px-3 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 rounded-xl text-xs font-semibold transition flex items-center justify-center space-x-1.5">
+            <i data-lucide="star" class="w-3.5 h-3.5 text-amber-500 fill-amber-500"></i>
+            <span>Rate & Reviews (${reviewCount})</span>
           </button>
         </div>
 
@@ -338,9 +727,9 @@ function setCategoryFilter(category) {
   const activeClasses = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white shadow-sm transition-all whitespace-nowrap';
   const inactiveClasses = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all flex items-center space-x-1.5 whitespace-nowrap';
 
-  btnAll.className = category === 'All' ? activeClasses : inactiveClasses;
-  btnOnline.className = category === 'Online Gaming' ? activeClasses : inactiveClasses;
-  btnOffline.className = category === 'Offline Sports' ? activeClasses : inactiveClasses;
+  if (btnAll) btnAll.className = category === 'All' ? activeClasses : inactiveClasses;
+  if (btnOnline) btnOnline.className = category === 'Online Gaming' ? activeClasses : inactiveClasses;
+  if (btnOffline) btnOffline.className = category === 'Offline Sports' ? activeClasses : inactiveClasses;
 
   fetchVenues();
 }
@@ -349,22 +738,562 @@ function applyFilters() {
   const citySelect = document.getElementById('cityFilter');
   const searchInput = document.getElementById('searchInput');
 
-  state.cityFilter = citySelect.value;
-  state.searchQuery = searchInput.value;
+  if (citySelect) state.cityFilter = citySelect.value;
+  if (searchInput) state.searchQuery = searchInput.value;
 
   fetchVenues();
 }
 
 function resetFilters() {
-  document.getElementById('cityFilter').value = 'All';
-  document.getElementById('searchInput').value = '';
+  const city = document.getElementById('cityFilter');
+  const search = document.getElementById('searchInput');
+  const sort = document.getElementById('sortFilter');
+
+  if (city) city.value = 'All';
+  if (search) search.value = '';
+  if (sort) sort.value = '';
+
   state.cityFilter = 'All';
   state.searchQuery = '';
+  state.activeGameFilter = null;
   setCategoryFilter('All');
 }
 
+function clearGameFilter() {
+  state.activeGameFilter = null;
+  fetchVenues();
+}
+
 // ==========================================
-// FEATURE 4: SEAT LOCKING & BOOKING FLOW
+// 2. EXISTING GAMES DIRECTORY
+// ==========================================
+async function fetchGames() {
+  try {
+    const res = await fetch('/api/games');
+    const data = await res.json();
+    if (data.success) {
+      state.gamesData = data;
+      renderExistingGames();
+    }
+  } catch (err) {
+    console.warn('Failed to fetch games:', err);
+  }
+}
+
+function renderExistingGames() {
+  const grid = document.getElementById('existingGamesGrid');
+  if (!grid) return;
+
+  let gamesToRender = [];
+  if (state.gamesCategoryFilter === 'Online Gaming') {
+    gamesToRender = state.gamesData.onlineGames || [];
+  } else if (state.gamesCategoryFilter === 'Offline Sports') {
+    gamesToRender = state.gamesData.offlineGames || [];
+  } else {
+    gamesToRender = state.gamesData.allGames || [...(state.gamesData.onlineGames || []), ...(state.gamesData.offlineGames || [])];
+  }
+
+  if (state.gamesSearchQuery.trim()) {
+    const q = state.gamesSearchQuery.trim().toLowerCase();
+    gamesToRender = gamesToRender.filter(g =>
+      g.name.toLowerCase().includes(q) ||
+      g.desc.toLowerCase().includes(q) ||
+      (Array.isArray(g.venues) && g.venues.some(v => v.shopName.toLowerCase().includes(q) || v.city.toLowerCase().includes(q)))
+    );
+  }
+
+  if (gamesToRender.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full py-12 text-center bg-white rounded-3xl border border-slate-200 p-8 space-y-2">
+        <i data-lucide="search-x" class="w-8 h-8 mx-auto text-slate-400"></i>
+        <h4 class="font-bold text-slate-800">No games found</h4>
+        <p class="text-xs text-slate-500">Try adjusting your search query.</p>
+      </div>
+    `;
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  grid.innerHTML = gamesToRender.map(game => {
+    const isOnline = game.category === 'Online Gaming';
+    const tagClass = isOnline ? 'tag-online' : 'tag-offline';
+    const venues = game.venues || [];
+
+    const venueChips = venues.length > 0
+      ? venues.map(v => `
+          <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/60 hover:border-blue-300 transition-all flex items-center justify-between text-xs">
+            <div>
+              <div class="font-bold text-slate-800">${v.shopName}</div>
+              <div class="text-[11px] text-slate-500 flex items-center space-x-1">
+                <i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i>
+                <span>${v.city} • ₹${v.pricePerHour}/hr</span>
+              </div>
+            </div>
+            <button onclick="openBookingModal('${v._id}')" class="px-2.5 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-[11px] font-bold transition shadow-sm">
+              Book
+            </button>
+          </div>
+        `).join('')
+      : `
+        <div class="text-xs text-slate-400 italic py-2">
+          No hubs currently offering this game. Be the first shop owner to add it!
+        </div>
+      `;
+
+    return `
+      <div class="gamehub-card p-5 flex flex-col justify-between space-y-4">
+        <div>
+          <!-- Header -->
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center space-x-3">
+              <div class="w-10 h-10 rounded-xl ${isOnline ? 'bg-blue-100 text-blue-700' : 'bg-emerald-100 text-emerald-700'} flex items-center justify-center font-bold text-sm shrink-0">
+                <i data-lucide="${game.icon || (isOnline ? 'monitor' : 'trophy')}" class="w-5 h-5"></i>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-slate-900">${game.name}</h3>
+                <span class="inline-block text-[10px] font-bold px-2 py-0.2 rounded-full ${tagClass} mt-0.5">
+                  ${game.category}
+                </span>
+              </div>
+            </div>
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 shrink-0">
+              ${venues.length} ${venues.length === 1 ? 'Hub' : 'Hubs'}
+            </span>
+          </div>
+
+          <p class="text-xs text-slate-500 mt-2.5">${game.desc}</p>
+
+          <!-- Venues offering this game -->
+          <div class="mt-4 pt-3 border-t border-slate-100 space-y-2">
+            <span class="text-[11px] uppercase tracking-wider font-bold text-slate-600 block">
+              Participating Hubs (${venues.length}):
+            </span>
+            <div class="space-y-1.5 max-h-48 overflow-y-auto">
+              ${venueChips}
+            </div>
+          </div>
+        </div>
+
+        <!-- Jump to Explore with Filter -->
+        <div class="pt-2 border-t border-slate-100">
+          <button onclick="jumpToExploreWithGame('${encodeURIComponent(game.name)}')" class="w-full py-2 px-3 bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-blue-600"></i>
+            <span>View All Hubs for ${game.name}</span>
+          </button>
+        </div>
+
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function filterExistingGamesCategory(cat) {
+  state.gamesCategoryFilter = cat;
+
+  const tabAll = document.getElementById('games-tab-all');
+  const tabOnline = document.getElementById('games-tab-online');
+  const tabOffline = document.getElementById('games-tab-offline');
+
+  const activeClasses = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white transition';
+  const inactiveClasses = 'px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200 transition flex items-center space-x-1.5';
+
+  if (tabAll) tabAll.className = cat === 'All' ? activeClasses : inactiveClasses;
+  if (tabOnline) tabOnline.className = cat === 'Online Gaming' ? activeClasses : inactiveClasses;
+  if (tabOffline) tabOffline.className = cat === 'Offline Sports' ? activeClasses : inactiveClasses;
+
+  renderExistingGames();
+}
+
+function filterExistingGamesSearch() {
+  const input = document.getElementById('gamesSearchInput');
+  if (input) state.gamesSearchQuery = input.value;
+  renderExistingGames();
+}
+
+function jumpToExploreWithGame(encodedGame) {
+  const game = decodeURIComponent(encodedGame);
+  state.activeGameFilter = game;
+  navigate('explore');
+}
+
+// ==========================================
+// 3. OWNER ONBOARDING WITH CLICKABLE CHIPS
+// ==========================================
+function renderOwnerGameChips() {
+  const onlineContainer = document.getElementById('onlineGamesChipsContainer');
+  const offlineContainer = document.getElementById('offlineGamesChipsContainer');
+  if (!onlineContainer || !offlineContainer) return;
+
+  onlineContainer.innerHTML = ALL_ONLINE_GAMES.map(g => {
+    const isSelected = state.selectedOwnerGames.has(g);
+    return `
+      <button type="button" onclick="toggleOwnerGameChip('${g}')" id="chip-${sanitizeId(g)}" class="game-chip ${isSelected ? 'active' : ''}">
+        <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-3 h-3"></i>
+        <span>${g}</span>
+      </button>
+    `;
+  }).join('');
+
+  offlineContainer.innerHTML = ALL_OFFLINE_GAMES.map(g => {
+    const isSelected = state.selectedOwnerGames.has(g);
+    return `
+      <button type="button" onclick="toggleOwnerGameChip('${g}')" id="chip-${sanitizeId(g)}" class="game-chip ${isSelected ? 'active-offline' : ''}">
+        <i data-lucide="${isSelected ? 'check' : 'plus'}" class="w-3 h-3"></i>
+        <span>${g}</span>
+      </button>
+    `;
+  }).join('');
+
+  updateSelectedOwnerGamesCount();
+  if (window.lucide) lucide.createIcons();
+}
+
+function sanitizeId(str) {
+  return str.replace(/[^a-zA-Z0-9]/g, '_');
+}
+
+function toggleOwnerGameChip(gameName) {
+  if (state.selectedOwnerGames.has(gameName)) {
+    state.selectedOwnerGames.delete(gameName);
+  } else {
+    state.selectedOwnerGames.add(gameName);
+  }
+  renderOwnerGameChips();
+}
+
+function updateSelectedOwnerGamesCount() {
+  const countLabel = document.getElementById('selectedGamesCountLabel');
+  if (countLabel) {
+    const count = state.selectedOwnerGames.size;
+    countLabel.innerText = `${count} ${count === 1 ? 'game' : 'games'} selected`;
+  }
+}
+
+function onCategoryRadioChange() {
+  const selectedRadio = document.querySelector('input[name="regCategory"]:checked');
+  const val = selectedRadio ? selectedRadio.value : 'Both';
+  const onlineSec = document.getElementById('chipsOnlineSection');
+  const offlineSec = document.getElementById('chipsOfflineSection');
+
+  if (val === 'Online Gaming') {
+    if (onlineSec) onlineSec.classList.remove('hidden');
+    if (offlineSec) offlineSec.classList.add('hidden');
+  } else if (val === 'Offline Sports') {
+    if (onlineSec) onlineSec.classList.add('hidden');
+    if (offlineSec) offlineSec.classList.remove('hidden');
+  } else {
+    if (onlineSec) onlineSec.classList.remove('hidden');
+    if (offlineSec) offlineSec.classList.remove('hidden');
+  }
+}
+
+function handleImageFilePreview(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    state.uploadedOwnerImagePreview = e.target.result;
+    const notice = document.getElementById('imgPreviewNotice');
+    if (notice) {
+      notice.classList.remove('hidden');
+      notice.innerText = `✅ Photo ready: ${file.name}`;
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+async function handleRegisterVenue(e) {
+  e.preventDefault();
+
+  const submitBtn = document.getElementById('regSubmitBtn');
+  submitBtn.disabled = true;
+  submitBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Processing ₹999 Activation...</span>`;
+
+  try {
+    const shopName = document.getElementById('regShopName').value.trim();
+    const ownerName = document.getElementById('regOwnerName').value.trim();
+    const phone = document.getElementById('regPhone').value.trim();
+    const city = document.getElementById('regCity').value;
+    const address = document.getElementById('regAddress').value.trim();
+    const mapUrl = document.getElementById('regMapUrl').value.trim();
+    const imageUrl = document.getElementById('regImageUrl').value.trim();
+    const category = document.querySelector('input[name="regCategory"]:checked').value;
+    const customGames = document.getElementById('regCustomGames').value.trim();
+    const totalCapacity = parseInt(document.getElementById('regCapacity').value, 10) || 20;
+    const pricePerHour = parseInt(document.getElementById('regPrice').value, 10) || 150;
+
+    // Combine selected chips + custom typed games
+    const games = Array.from(state.selectedOwnerGames);
+    if (customGames) {
+      customGames.split(',').forEach(g => {
+        const clean = g.trim();
+        if (clean && !games.includes(clean)) games.push(clean);
+      });
+    }
+
+    if (games.length === 0) {
+      alert('Please select at least one game or sport that your venue offers.');
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Activate Listing & Pay ₹999</span>`;
+      return;
+    }
+
+    const payload = {
+      shopName,
+      ownerName,
+      phone,
+      city,
+      address,
+      mapUrl,
+      image: state.uploadedOwnerImagePreview || imageUrl,
+      category,
+      gamesOffered: games,
+      totalCapacity,
+      pricePerHour,
+      subscriptionPaid: true,
+      subscriptionStatus: 'Active'
+    };
+
+    const res = await fetch('/api/venues', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert(`🎉 Congratulations! "${shopName}" is now officially published live on GameHub!\nMonthly ₹999 subscription activated in MongoDB.`);
+      document.getElementById('ownerRegisterForm').reset();
+      state.selectedOwnerGames.clear();
+      renderOwnerGameChips();
+      await fetchVenues();
+      await fetchGames();
+      await fetchOwnerInsights();
+      navigate('explore');
+    } else {
+      alert(`Registration failed: ${data.error || 'Server error'}`);
+    }
+  } catch (err) {
+    alert(`Registration failed: ${err.message}`);
+  } finally {
+    submitBtn.disabled = false;
+    submitBtn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Activate Listing & Pay ₹999</span>`;
+    if (window.lucide) lucide.createIcons();
+  }
+}
+
+async function fetchOwnerVenues() {
+  const container = document.getElementById('ownerVenuesList');
+  if (!container) return;
+
+  const res = await fetch('/api/venues');
+  const data = await res.json();
+  const venues = data.venues || [];
+
+  if (venues.length === 0) {
+    container.innerHTML = '<p class="text-xs text-slate-400 italic">No registered venues.</p>';
+    return;
+  }
+
+  container.innerHTML = venues.map(v => {
+    const isCourtEmpty = v.courtStatus === 'Empty';
+    return `
+      <div class="p-3 rounded-2xl border border-slate-200 bg-slate-50 space-y-2">
+        <div class="flex items-center justify-between">
+          <div>
+            <h4 class="text-xs font-bold text-slate-900">${v.shopName}</h4>
+            <span class="text-[10px] text-slate-500">${v.city} • ${v.category}</span>
+          </div>
+          <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isCourtEmpty ? 'badge-available' : 'badge-occupied'}">
+            ${v.courtStatus}
+          </span>
+        </div>
+
+        <div class="flex items-center justify-between pt-1 border-t border-slate-200 text-xs">
+          <span class="text-[11px] text-slate-600">Toggle Court:</span>
+          <div class="space-x-1.5">
+            <button onclick="updateCourtStatus('${v._id}', 'Empty')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg ${isCourtEmpty ? 'bg-emerald-600 text-white' : 'bg-white border text-slate-700'}">
+              Empty (Ready)
+            </button>
+            <button onclick="updateCourtStatus('${v._id}', 'Occupied')" class="px-2.5 py-1 text-[11px] font-bold rounded-lg ${!isCourtEmpty ? 'bg-rose-600 text-white' : 'bg-white border text-slate-700'}">
+              Occupied
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function updateCourtStatus(venueId, status) {
+  try {
+    const res = await fetch(`/api/venues/${venueId}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ courtStatus: status })
+    });
+    const data = await res.json();
+    if (data.success) {
+      await fetchVenues();
+      await fetchOwnerVenues();
+      await fetchActivityLogsMini();
+    }
+  } catch (e) {
+    console.error('Failed to toggle court status:', e);
+  }
+}
+
+async function fetchOwnerInsights() {
+  try {
+    const res = await fetch('/api/owner/insights');
+    const data = await res.json();
+    if (data.success) {
+      const elTotal = document.getElementById('insTotalBookings');
+      const elActive = document.getElementById('insActiveBookings');
+      const elGross = document.getElementById('insGrossRevenue');
+      const elSnacks = document.getElementById('insSnacksRevenue');
+      const elOnline = document.getElementById('insOnlineRevenue');
+      const elVenue = document.getElementById('insVenueRevenue');
+      const elCancelled = document.getElementById('insCancelledCount');
+
+      if (elTotal) elTotal.innerText = data.totalBookings || 0;
+      if (elActive) elActive.innerText = `${data.confirmedBookings || 0} Active`;
+      if (elGross) elGross.innerText = `₹${(data.grossRevenue || 0).toLocaleString()}`;
+      if (elSnacks) elSnacks.innerText = `₹${(data.snacksRevenue || 0).toLocaleString()} F&B snacks`;
+      if (elOnline) elOnline.innerText = `₹${(data.onlineRevenue || 0).toLocaleString()}`;
+      if (elVenue) elVenue.innerText = `₹${(data.venueRevenue || 0).toLocaleString()}`;
+      if (elCancelled) elCancelled.innerText = `${data.cancelledBookings || 0} Cancelled`;
+    }
+  } catch (e) {
+    console.warn('Failed to fetch owner insights:', e);
+  }
+}
+
+// ==========================================
+// 4. RATINGS & QUICK REVIEWS
+// ==========================================
+function openReviewModal(venueId) {
+  const venue = state.venues.find(v => String(v._id) === String(venueId));
+  if (!venue) return;
+
+  state.currentReviewVenueId = venueId;
+  const nameEl = document.getElementById('revModalShopName');
+  if (nameEl) nameEl.innerText = venue.shopName;
+
+  const revUserName = document.getElementById('revUserName');
+  if (revUserName) {
+    revUserName.value = state.currentUser ? state.currentUser.name : '';
+  }
+
+  const revComment = document.getElementById('revComment');
+  if (revComment) revComment.value = '';
+
+  setStarRating(5);
+
+  // Render existing reviews
+  const existingList = document.getElementById('revExistingList');
+  if (existingList) {
+    const reviews = venue.reviews || [];
+    if (reviews.length === 0) {
+      existingList.innerHTML = '<p class="text-slate-400 italic">No reviews yet. Be the first player to review!</p>';
+    } else {
+      existingList.innerHTML = reviews.slice().reverse().map(r => `
+        <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 space-y-1">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-slate-800">${r.userName || 'Verified Player'}</span>
+            <span class="text-amber-500 font-bold text-xs">${'★'.repeat(r.rating || 5)}</span>
+          </div>
+          <p class="text-slate-600 text-[11px]">${r.comment || ''}</p>
+          <span class="text-[9px] text-slate-400">${r.createdAt ? new Date(r.createdAt).toLocaleDateString() : 'Recent'}</span>
+        </div>
+      `).join('');
+    }
+  }
+
+  const modal = document.getElementById('reviewModal');
+  if (modal) modal.classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeReviewModal() {
+  const modal = document.getElementById('reviewModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function setStarRating(rating) {
+  state.reviewStarRating = rating;
+
+  const container = document.getElementById('starPickerContainer');
+  if (container) {
+    const buttons = container.querySelectorAll('.star-btn');
+    buttons.forEach((btn, idx) => {
+      if (idx < rating) {
+        btn.className = 'star-btn text-amber-400 scale-110 transition-transform';
+      } else {
+        btn.className = 'star-btn text-slate-300 transition-transform';
+      }
+    });
+  }
+
+  const labels = {
+    1: '1 Star — Poor',
+    2: '2 Stars — Fair',
+    3: '3 Stars — Good',
+    4: '4 Stars — Great',
+    5: '5 Stars — Outstanding Experience!'
+  };
+
+  const labelEl = document.getElementById('starRatingLabel');
+  if (labelEl) labelEl.innerText = labels[rating] || `${rating} Stars`;
+}
+
+async function submitVenueReview() {
+  if (!state.currentReviewVenueId) return;
+
+  const userName = (document.getElementById('revUserName').value || '').trim();
+  const comment = (document.getElementById('revComment').value || '').trim();
+
+  if (!userName) return alert('Please enter your name.');
+  if (!comment) return alert('Please enter your review comments.');
+
+  const btn = document.getElementById('revSubmitBtn');
+  btn.disabled = true;
+  btn.innerHTML = 'Submitting Review to MongoDB...';
+
+  try {
+    const res = await fetch(`/api/venues/${state.currentReviewVenueId}/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        userName,
+        rating: state.reviewStarRating,
+        comment
+      })
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert(`⭐ Thank you for your review! Venue updated to ${data.venue.rating} ★.`);
+      closeReviewModal();
+      await fetchVenues();
+      await fetchActivityLogsMini();
+    } else {
+      alert(`Review submission failed: ${data.error || 'Server error'}`);
+    }
+  } catch (e) {
+    alert(`Review error: ${e.message}`);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<i data-lucide="star" class="w-4 h-4 text-amber-300"></i><span>Submit Review to MongoDB</span>`;
+    if (window.lucide) lucide.createIcons();
+  }
+}
+
+// ==========================================
+// 5. INTERACTIVE BOOKING MODAL (SEATS & SLOTS)
 // ==========================================
 async function openBookingModal(venueId) {
   const venue = state.venues.find(v => String(v._id) === String(venueId));
@@ -383,8 +1312,17 @@ async function openBookingModal(venueId) {
   renderHourlySlots();
   renderSnackBar();
 
-  document.getElementById('bmPlayerName').value = '';
-  document.getElementById('bmPlayerPhone').value = '';
+  // Auto-fill logged in player info if available
+  const pName = document.getElementById('bmPlayerName');
+  const pPhone = document.getElementById('bmPlayerPhone');
+  if (state.currentUser) {
+    pName.value = state.currentUser.name || '';
+    pPhone.value = state.currentUser.phone || '';
+  } else {
+    pName.value = '';
+    pPhone.value = '';
+  }
+
   stopSeatLockCountdown();
 
   document.getElementById('bookingModal').classList.remove('hidden');
@@ -395,7 +1333,6 @@ async function openBookingModal(venueId) {
 }
 
 function closeBookingModal() {
-  // Release held seat locks
   if (state.currentBookingVenue && state.selectedSeats.length > 0) {
     state.selectedSeats.forEach(seatId => {
       fetch(`/api/venues/${state.currentBookingVenue._id}/unlock-seat`, {
@@ -412,47 +1349,53 @@ function closeBookingModal() {
   }
 
   stopSeatLockCountdown();
+  state.currentBookingVenue = null;
+  state.selectedSeats = [];
+  state.selectedSnacks = {};
   document.getElementById('bookingModal').classList.add('hidden');
 }
 
-function selectBookingDate(offsetDays) {
-  state.selectedDate = getDateOffset(offsetDays);
-  document.getElementById('bookingCustomDate').value = state.selectedDate;
-
-  [0, 1, 2].forEach(idx => {
-    const btn = document.getElementById(`dateBtn-${idx}`);
-    if (idx === offsetDays) {
-      btn.className = 'date-tab px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white border border-blue-600';
-    } else {
-      btn.className = 'date-tab px-4 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200';
+function selectBookingDate(offset) {
+  state.selectedDate = getDateOffset(offset);
+  [0, 1, 2].forEach(i => {
+    const btn = document.getElementById(`dateBtn-${i}`);
+    if (btn) {
+      if (i === offset) {
+        btn.className = 'date-tab px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white border border-blue-600';
+      } else {
+        btn.className = 'date-tab px-4 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200';
+      }
     }
   });
+
+  const customInput = document.getElementById('bookingCustomDate');
+  if (customInput) customInput.value = state.selectedDate;
 
   loadSlotAvailability();
 }
 
-function onCustomDateChange(dateValue) {
-  if (!dateValue) return;
-  state.selectedDate = dateValue;
-
-  [0, 1, 2].forEach(idx => {
-    const btn = document.getElementById(`dateBtn-${idx}`);
-    btn.className = 'date-tab px-4 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200';
+function onCustomDateChange(val) {
+  if (!val) return;
+  state.selectedDate = val;
+  [0, 1, 2].forEach(i => {
+    const btn = document.getElementById(`dateBtn-${i}`);
+    if (btn) btn.className = 'date-tab px-4 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200';
   });
-
   loadSlotAvailability();
 }
 
 function renderHourlySlots() {
   const container = document.getElementById('slotsContainer');
+  if (!container) return;
+
   container.innerHTML = HOURLY_SLOTS.map(slot => {
     const isSelected = slot === state.selectedSlot;
-    const btnClass = isSelected
-      ? 'px-3 py-2 text-xs font-bold bg-blue-600 text-white rounded-xl shadow-sm border border-blue-600 transition'
-      : 'px-3 py-2 text-xs font-medium bg-slate-50 text-slate-700 hover:bg-slate-100 rounded-xl border border-slate-200 transition';
-
     return `
-      <button type="button" onclick="selectSlot('${slot}')" class="${btnClass}">
+      <button type="button" onclick="selectSlot('${slot}')" class="px-3 py-2 rounded-xl text-xs font-semibold border transition text-center ${
+        isSelected
+          ? 'bg-blue-600 text-white border-blue-600 shadow-sm'
+          : 'bg-slate-50 hover:bg-slate-100 text-slate-700 border-slate-200'
+      }">
         ${slot}
       </button>
     `;
@@ -461,8 +1404,6 @@ function renderHourlySlots() {
 
 function selectSlot(slot) {
   state.selectedSlot = slot;
-  state.selectedSeats = [];
-  stopSeatLockCountdown();
   renderHourlySlots();
   loadSlotAvailability();
 }
@@ -470,123 +1411,116 @@ function selectSlot(slot) {
 async function loadSlotAvailability() {
   if (!state.currentBookingVenue) return;
 
-  const venueId = state.currentBookingVenue._id;
-  const date = state.selectedDate;
-  const slot = state.selectedSlot;
-
-  try {
-    const res = await fetch(`/api/venues/${venueId}/availability?date=${date}&timeSlot=${encodeURIComponent(slot)}&sessionId=${CLIENT_SESSION_ID}`);
-    const data = await res.json();
-
-    if (data.success) {
-      state.currentAvailability = data;
-      renderInteractiveArea(data);
-      updateTotalPayable();
-    }
-  } catch (err) {
-    console.error('Error fetching availability:', err);
-  }
-}
-
-function renderInteractiveArea(avail) {
-  const seatMapSection = document.getElementById('seatMapSection');
-  const courtStatusSection = document.getElementById('courtStatusSection');
-  const swimmingSection = document.getElementById('swimmingCapacitySection');
-
-  seatMapSection.classList.add('hidden');
-  courtStatusSection.classList.add('hidden');
-  swimmingSection.classList.add('hidden');
-
   const venue = state.currentBookingVenue;
-  const isSwimming = venue.gamesOffered && venue.gamesOffered.some(g => g.toLowerCase().includes('swim'));
-  const isVolleyball = venue.gamesOffered && venue.gamesOffered.some(g => g.toLowerCase().includes('volley'));
-  const isOnline = venue.category === 'Online Gaming' || (venue.category === 'Both' && !isSwimming && !isVolleyball);
+  const isOnline = venue.category === 'Online Gaming' || venue.category === 'Both';
+  const gamesList = venue.gamesOffered || [];
+  const isSwimming = gamesList.some(g => g.toLowerCase().includes('swim'));
+  const isVolleyball = gamesList.some(g => g.toLowerCase().includes('volley')) || (venue.category === 'Offline Sports' && !isSwimming);
+
+  const seatSec = document.getElementById('seatMapSection');
+  const courtSec = document.getElementById('courtStatusSection');
+  const swimSec = document.getElementById('swimmingCapacitySection');
 
   if (isOnline) {
-    seatMapSection.classList.remove('hidden');
-    renderSeatMap(avail);
+    if (seatSec) seatSec.classList.remove('hidden');
+    if (courtSec) courtSec.classList.add('hidden');
+    if (swimSec) swimSec.classList.add('hidden');
   } else if (isSwimming) {
-    swimmingSection.classList.remove('hidden');
-    renderSwimmingCapacity(avail);
+    if (seatSec) seatSec.classList.add('hidden');
+    if (courtSec) courtSec.classList.add('hidden');
+    if (swimSec) swimSec.classList.remove('hidden');
   } else {
-    courtStatusSection.classList.remove('hidden');
-    renderCourtStatus(avail);
+    if (seatSec) seatSec.classList.add('hidden');
+    if (courtSec) courtSec.classList.remove('hidden');
+    if (swimSec) swimSec.classList.add('hidden');
   }
-}
 
-// Render Seat Map with Real-Time Locked Seats
-function renderSeatMap(avail) {
-  const grid = document.getElementById('seatGrid');
-  const total = avail.totalSeats || 24;
-  const booked = avail.bookedSeats || [];
-  const locked = avail.lockedSeats || [];
+  try {
+    const params = new URLSearchParams({
+      date: state.selectedDate,
+      timeSlot: state.selectedSlot,
+      sessionId: CLIENT_SESSION_ID
+    });
 
-  let html = '';
-  const rows = ['A', 'B', 'C', 'D'];
-  const seatsPerRow = Math.min(12, Math.ceil(total / 2));
+    const res = await fetch(`/api/venues/${venue._id}/availability?${params.toString()}`);
+    const data = await res.json();
+    state.currentAvailability = data;
 
-  let seatIndex = 0;
-  for (let r = 0; r < 2; r++) {
-    const rowLetter = rows[r];
-    html += `<div class="flex items-center space-x-2 my-1 w-full justify-center">`;
-    html += `<span class="w-5 text-xs font-bold text-slate-400">${rowLetter}</span>`;
-
-    for (let c = 1; c <= seatsPerRow; c++) {
-      seatIndex++;
-      if (seatIndex > total) break;
-
-      const seatId = `${rowLetter}${c}`;
-      const isBooked = booked.includes(seatId);
-      const isSelected = state.selectedSeats.includes(seatId);
-      const lockObj = locked.find(l => l.seatId === seatId);
-      const isLockedByOther = lockObj && !lockObj.isMine;
-
-      let seatClass = 'seat-btn seat-available';
-      let title = `Station ${seatId} Available (Click to select)`;
-      let disabledAttr = '';
-
-      if (isBooked) {
-        seatClass = 'seat-btn seat-booked';
-        title = `Station ${seatId} Booked`;
-        disabledAttr = 'disabled';
-      } else if (isLockedByOther) {
-        seatClass = 'seat-btn seat-locked';
-        title = `Station ${seatId} is held by another player (${lockObj.expiresInSeconds}s left)`;
-        disabledAttr = 'disabled';
-      } else if (isSelected) {
-        seatClass = 'seat-btn seat-selected';
-        title = `Station ${seatId} Selected by you`;
-      }
-
-      html += `
-        <button type="button" 
-          onclick="${(isBooked || isLockedByOther) ? '' : `toggleSeat('${seatId}')`}"
-          ${disabledAttr}
-          class="${seatClass}" 
-          title="${title}">
-          ${seatId}
-        </button>
-      `;
+    if (isOnline) {
+      renderInteractiveSeatGrid(data);
+    } else if (isSwimming) {
+      renderSwimmingAvailability(data);
+    } else {
+      renderCourtAvailability(data);
     }
-    html += `</div>`;
-  }
 
-  grid.innerHTML = html;
-  document.getElementById('selectedSeatsLabel').innerText = state.selectedSeats.length > 0
-    ? state.selectedSeats.join(', ')
-    : 'None';
+    updateTotalAmountDisplay();
+  } catch (err) {
+    console.error('Failed to load slot availability:', err);
+  }
 }
 
-async function toggleSeat(seatId) {
-  const venue = state.currentBookingVenue;
-  if (!venue) return;
+// Visual Seat Grid (BookMyShow Style)
+function renderInteractiveSeatGrid(avail) {
+  const grid = document.getElementById('seatGrid');
+  if (!grid) return;
 
-  const idx = state.selectedSeats.indexOf(seatId);
+  const bookedSeats = avail.bookedSeats || [];
+  const lockedSeats = avail.lockedSeats || [];
+  const totalCapacity = state.currentBookingVenue.totalCapacity || 24;
 
-  if (idx > -1) {
-    // Unselect seat and release lock
-    state.selectedSeats.splice(idx, 1);
-    fetch(`/api/venues/${venue._id}/unlock-seat`, {
+  const seats = [];
+  const half = Math.ceil(totalCapacity / 2);
+  for (let i = 1; i <= half; i++) seats.push(`A${i}`);
+  for (let i = 1; i <= (totalCapacity - half); i++) seats.push(`B${i}`);
+
+  grid.innerHTML = seats.map(sId => {
+    const isBooked = bookedSeats.includes(sId);
+    const lockInfo = lockedSeats.find(l => l.seatId === sId);
+    const isLockedOther = lockInfo && !lockInfo.isMine;
+    const isSelected = state.selectedSeats.includes(sId);
+
+    let stateClass = 'seat-available';
+    let title = `Station ${sId} - Available (₹${state.currentBookingVenue.pricePerHour}/hr)`;
+
+    if (isBooked) {
+      stateClass = 'seat-booked';
+      title = `Station ${sId} - Already Booked`;
+    } else if (isSelected) {
+      stateClass = 'seat-selected';
+      title = `Station ${sId} - Selected by you`;
+    } else if (isLockedOther) {
+      stateClass = 'seat-locked';
+      title = `Station ${sId} - Temporarily held by another player (${lockInfo.expiresInSeconds}s left)`;
+    }
+
+    return `
+      <div onclick="toggleSeat('${sId}', ${isBooked}, ${isLockedOther})" class="seat-btn ${stateClass}" title="${title}">
+        <span>${sId}</span>
+        <span class="text-[9px] opacity-75">${sId.startsWith('A') ? 'PC' : 'RIG'}</span>
+      </div>
+    `;
+  }).join('');
+
+  const label = document.getElementById('selectedSeatsLabel');
+  if (label) label.innerText = state.selectedSeats.length > 0 ? state.selectedSeats.join(', ') : 'None';
+}
+
+async function toggleSeat(seatId, isBooked, isLockedOther) {
+  if (isBooked) {
+    alert(`Station ${seatId} is already booked for this slot.`);
+    return;
+  }
+  if (isLockedOther) {
+    alert(`Station ${seatId} is currently held by another player. Try again in a few minutes.`);
+    return;
+  }
+
+  const index = state.selectedSeats.indexOf(seatId);
+  if (index > -1) {
+    // Deselect and release hold
+    state.selectedSeats.splice(index, 1);
+    await fetch(`/api/venues/${state.currentBookingVenue._id}/unlock-seat`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -595,69 +1529,54 @@ async function toggleSeat(seatId) {
         seatId,
         sessionId: CLIENT_SESSION_ID
       })
-    }).catch(() => {});
-
-    if (state.selectedSeats.length === 0) {
-      stopSeatLockCountdown();
-    }
+    });
   } else {
-    // Select and lock seat on backend
-    try {
-      const res = await fetch(`/api/venues/${venue._id}/lock-seat`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          date: state.selectedDate,
-          timeSlot: state.selectedSlot,
-          seatId,
-          sessionId: CLIENT_SESSION_ID
-        })
-      });
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        alert(data.error || 'Seat could not be locked');
-        return;
-      }
-
-      state.selectedSeats.push(seatId);
-      startSeatLockCountdown(300); // 5 minutes
-    } catch (e) {
-      state.selectedSeats.push(seatId);
+    // Select and lock
+    const res = await fetch(`/api/venues/${state.currentBookingVenue._id}/lock-seat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        date: state.selectedDate,
+        timeSlot: state.selectedSlot,
+        seatId,
+        sessionId: CLIENT_SESSION_ID
+      })
+    });
+    const lockResult = await res.json();
+    if (!lockResult.success) {
+      alert(lockResult.error || 'Seat could not be locked');
+      return;
     }
+    state.selectedSeats.push(seatId);
+    startSeatLockCountdown(300);
   }
 
-  if (state.currentAvailability) {
-    renderSeatMap(state.currentAvailability);
-  }
-  updateTotalPayable();
+  await loadSlotAvailability();
 }
 
-function startSeatLockCountdown(seconds) {
+function startSeatLockCountdown(seconds = 300) {
   stopSeatLockCountdown();
   state.seatLockRemainingSeconds = seconds;
-
   const banner = document.getElementById('seatLockTimerBanner');
   const timerText = document.getElementById('seatLockCountdown');
-  banner.classList.remove('hidden');
 
-  function updateTimer() {
-    const mins = String(Math.floor(state.seatLockRemainingSeconds / 60)).padStart(2, '0');
-    const secs = String(state.seatLockRemainingSeconds % 60).padStart(2, '0');
-    timerText.innerText = `${mins}:${secs}`;
+  if (banner) banner.classList.remove('hidden');
 
+  const update = () => {
+    const mins = Math.floor(state.seatLockRemainingSeconds / 60);
+    const secs = state.seatLockRemainingSeconds % 60;
+    if (timerText) timerText.innerText = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
     if (state.seatLockRemainingSeconds <= 0) {
       stopSeatLockCountdown();
-      alert('⚠️ Your 5-minute seat hold has expired. Please re-select your seats.');
+      alert('⏱️ Your 5-minute seat hold has expired. Please select your seats again.');
       state.selectedSeats = [];
       loadSlotAvailability();
-    } else {
-      state.seatLockRemainingSeconds--;
     }
-  }
+    state.seatLockRemainingSeconds--;
+  };
 
-  updateTimer();
-  state.seatLockTimer = setInterval(updateTimer, 1000);
+  update();
+  state.seatLockTimer = setInterval(update, 1000);
 }
 
 function stopSeatLockCountdown() {
@@ -669,105 +1588,106 @@ function stopSeatLockCountdown() {
   if (banner) banner.classList.add('hidden');
 }
 
-// Render Swimming pool capacity meter
-function renderSwimmingCapacity(avail) {
-  const title = document.getElementById('swimmingSlotBatchTitle');
-  const spotsLeftBadge = document.getElementById('swimmingSpotsLeftBadge');
-  const filledText = document.getElementById('swimmingFilledText');
-  const bar = document.getElementById('swimmingCapacityBar');
-  const countSpan = document.getElementById('swimmingSpotsCount');
-
-  title.innerText = `${state.selectedSlot} Batch`;
-
-  const max = avail.swimmingMaxBatch || 10;
-  const filled = avail.swimmingFilledSpots || 0;
-  const left = avail.swimmingSpotsLeft != null ? avail.swimmingSpotsLeft : Math.max(0, max - filled);
-
-  spotsLeftBadge.innerText = `${left} spots left`;
-  if (left <= 0) {
-    spotsLeftBadge.className = 'px-3 py-1 bg-rose-100 border border-rose-300 text-rose-800 rounded-full text-xs font-bold';
-    spotsLeftBadge.innerText = 'BATCH FULL';
-  } else {
-    spotsLeftBadge.className = 'px-3 py-1 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-full text-xs font-bold';
-  }
-
-  filledText.innerText = `${filled}/${max} slots filled for ${state.selectedSlot}`;
-  const pct = Math.min(100, Math.round((filled / max) * 100));
-  bar.style.width = `${pct}%`;
-
-  if (state.swimmingSpots > left && left > 0) state.swimmingSpots = left;
-  if (left === 0) state.swimmingSpots = 0;
-  countSpan.innerText = state.swimmingSpots;
-}
-
-function changeSwimmingSpots(delta) {
-  if (!state.currentAvailability) return;
-  const left = state.currentAvailability.swimmingSpotsLeft || 0;
-  if (left <= 0) return;
-
-  const next = state.swimmingSpots + delta;
-  if (next >= 1 && next <= left) {
-    state.swimmingSpots = next;
-    document.getElementById('swimmingSpotsCount').innerText = state.swimmingSpots;
-    updateTotalPayable();
-  }
-}
-
-// Render Volleyball / Court Status
-function renderCourtStatus(avail) {
+// Offline Sports: Court Availability
+function renderCourtAvailability(avail) {
   const alertBox = document.getElementById('courtStatusAlert');
-  const isOccupied = avail.courtOccupiedForSlot;
+  if (!alertBox) return;
 
-  if (!isOccupied) {
-    alertBox.className = 'p-5 rounded-2xl border border-emerald-200 bg-emerald-50 text-emerald-900 flex items-center space-x-4';
+  const isAvailable = avail.courtEmpty;
+  if (isAvailable) {
+    alertBox.className = 'p-5 rounded-2xl border bg-emerald-50 border-emerald-200 text-emerald-900 flex items-center space-x-4';
     alertBox.innerHTML = `
-      <div class="w-10 h-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
-        <i data-lucide="check-circle-2" class="w-6 h-6"></i>
+      <div class="w-12 h-12 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+        <i data-lucide="check" class="w-6 h-6"></i>
       </div>
       <div>
-        <h4 class="text-xs sm:text-sm font-bold text-emerald-900">Volleyball Court is EMPTY & Available!</h4>
-        <p class="text-[11px] text-emerald-700 mt-0.5">The court is unoccupied for ${state.selectedSlot}. You can reserve the full court below.</p>
+        <h4 class="font-bold text-sm">✅ Court is Empty & Available!</h4>
+        <p class="text-xs text-emerald-700 mt-0.5">Court is ready for reservation for ${state.selectedSlot}. Hourly booking rate: ₹${state.currentBookingVenue.pricePerHour}/hr.</p>
       </div>
     `;
   } else {
-    alertBox.className = 'p-5 rounded-2xl border border-rose-200 bg-rose-50 text-rose-900 flex items-center space-x-4';
+    alertBox.className = 'p-5 rounded-2xl border bg-rose-50 border-rose-200 text-rose-900 flex items-center space-x-4';
     alertBox.innerHTML = `
-      <div class="w-10 h-10 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0">
-        <i data-lucide="alert-octagon" class="w-6 h-6"></i>
+      <div class="w-12 h-12 rounded-xl bg-rose-500 text-white flex items-center justify-center shrink-0">
+        <i data-lucide="x" class="w-6 h-6"></i>
       </div>
       <div>
-        <h4 class="text-xs sm:text-sm font-bold text-rose-900">Court is Currently OCCUPIED</h4>
-        <p class="text-[11px] text-rose-700 mt-0.5">This court is reserved or set to Occupied by the owner for ${state.selectedSlot}.</p>
+        <h4 class="font-bold text-sm">⛔ Court is Currently Occupied</h4>
+        <p class="text-xs text-rose-700 mt-0.5">This court is reserved or marked in-use for ${state.selectedSlot}. Please choose another time slot.</p>
       </div>
     `;
   }
-
   if (window.lucide) lucide.createIcons();
 }
 
-// ==========================================
-// FEATURE 3: IN-VENUE F&B SNACK BAR
-// ==========================================
+// Capacity-Based: Swimming Pool Batch Limit (Max 10)
+function renderSwimmingAvailability(avail) {
+  const filled = avail.swimmingFilledSpots || 0;
+  const maxCap = avail.swimmingMaxBatch || 10;
+  const remaining = Math.max(0, maxCap - filled);
+
+  const title = document.getElementById('swimmingSlotBatchTitle');
+  const badge = document.getElementById('swimmingSpotsLeftBadge');
+  const filledText = document.getElementById('swimmingFilledText');
+  const bar = document.getElementById('swimmingCapacityBar');
+  const spotsCount = document.getElementById('swimmingSpotsCount');
+
+  if (title) title.innerText = `${state.selectedSlot} Batch`;
+  if (badge) badge.innerText = `${remaining} spots left`;
+  if (filledText) filledText.innerText = `${filled}/${maxCap} slots filled`;
+
+  const percent = Math.min(100, Math.round((filled / maxCap) * 100));
+  if (bar) {
+    bar.style.width = `${percent}%`;
+    bar.className = percent >= 100 ? 'bg-rose-600 h-3 rounded-full' : (percent >= 70 ? 'bg-amber-500 h-3 rounded-full' : 'bg-blue-600 h-3 rounded-full');
+  }
+
+  if (state.swimmingSpots > remaining) {
+    state.swimmingSpots = Math.max(1, remaining);
+  }
+  if (spotsCount) spotsCount.innerText = state.swimmingSpots;
+}
+
+function changeSwimmingSpots(delta) {
+  const avail = state.currentAvailability;
+  const maxCap = (avail && avail.swimmingMaxBatch) || 10;
+  const filled = (avail && avail.swimmingFilledSpots) || 0;
+  const remaining = Math.max(0, maxCap - filled);
+
+  const next = state.swimmingSpots + delta;
+  if (next >= 1 && next <= remaining) {
+    state.swimmingSpots = next;
+    const count = document.getElementById('swimmingSpotsCount');
+    if (count) count.innerText = state.swimmingSpots;
+    updateTotalAmountDisplay();
+  } else if (next > remaining) {
+    alert(`Only ${remaining} slots available in this batch (Max 10 per hour safety limit).`);
+  }
+}
+
+// In-Venue F&B Snack Bar
 function renderSnackBar() {
-  const container = document.getElementById('snackBarList');
-  container.innerHTML = SNACK_MENU.map(item => {
+  const list = document.getElementById('snackBarList');
+  if (!list) return;
+
+  list.innerHTML = SNACK_MENU.map(item => {
     const qty = state.selectedSnacks[item.id] || 0;
     return `
       <div class="snack-card flex items-center justify-between">
         <div class="flex items-center space-x-2.5">
-          <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <div class="w-8 h-8 rounded-lg bg-amber-50 border border-amber-200 text-amber-700 flex items-center justify-center shrink-0">
             <i data-lucide="${item.icon}" class="w-4 h-4"></i>
           </div>
           <div>
             <div class="text-xs font-bold text-slate-800">${item.name}</div>
-            <div class="text-[11px] font-semibold text-emerald-600">₹${item.price}</div>
+            <div class="text-[11px] font-semibold text-emerald-700">₹${item.price}</div>
           </div>
         </div>
 
-        <div class="flex items-center space-x-2">
-          <button type="button" onclick="updateSnackQty('${item.id}', -1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 flex items-center justify-center text-xs">-</button>
-          <span class="w-4 text-center font-bold text-xs text-slate-900">${qty}</span>
-          <button type="button" onclick="updateSnackQty('${item.id}', 1)" class="w-6 h-6 rounded bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 flex items-center justify-center text-xs">+</button>
+        <div class="flex items-center space-x-1.5">
+          <button type="button" onclick="adjustSnackQty('${item.id}', -1)" class="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 font-bold text-xs flex items-center justify-center">-</button>
+          <span class="w-5 text-center text-xs font-bold text-slate-900">${qty}</span>
+          <button type="button" onclick="adjustSnackQty('${item.id}', 1)" class="w-6 h-6 rounded-md bg-slate-100 hover:bg-slate-200 font-bold text-xs flex items-center justify-center">+</button>
         </div>
       </div>
     `;
@@ -776,67 +1696,55 @@ function renderSnackBar() {
   if (window.lucide) lucide.createIcons();
 }
 
-function updateSnackQty(snackId, delta) {
-  const current = state.selectedSnacks[snackId] || 0;
+function adjustSnackQty(itemId, delta) {
+  const current = state.selectedSnacks[itemId] || 0;
   const next = Math.max(0, current + delta);
   if (next === 0) {
-    delete state.selectedSnacks[snackId];
+    delete state.selectedSnacks[itemId];
   } else {
-    state.selectedSnacks[snackId] = next;
+    state.selectedSnacks[itemId] = next;
   }
   renderSnackBar();
-  updateTotalPayable();
+  updateTotalAmountDisplay();
 }
 
-function getSnacksTotal() {
-  let total = 0;
+function calculateSnacksTotal() {
+  let sum = 0;
   for (const [id, qty] of Object.entries(state.selectedSnacks)) {
     const item = SNACK_MENU.find(m => m.id === id);
-    if (item) total += item.price * qty;
+    if (item) sum += item.price * qty;
   }
-  return total;
+  return sum;
 }
 
-function getSelectedSnacksList() {
-  const list = [];
-  for (const [id, qty] of Object.entries(state.selectedSnacks)) {
-    const item = SNACK_MENU.find(m => m.id === id);
-    if (item && qty > 0) {
-      list.push({ id: item.id, name: item.name, price: item.price, qty });
-    }
+function updateTotalAmountDisplay() {
+  if (!state.currentBookingVenue) return;
+  const rate = state.currentBookingVenue.pricePerHour || 150;
+  const isOnline = state.currentBookingVenue.category === 'Online Gaming' || state.currentBookingVenue.category === 'Both';
+  const gamesList = state.currentBookingVenue.gamesOffered || [];
+  const isSwimming = gamesList.some(g => g.toLowerCase().includes('swim'));
+
+  let primaryCount = 1;
+  if (isOnline) {
+    primaryCount = state.selectedSeats.length;
+  } else if (isSwimming) {
+    primaryCount = state.swimmingSpots;
   }
-  return list;
+
+  const seatTotal = rate * primaryCount;
+  const snacksTotal = calculateSnacksTotal();
+  const grandTotal = seatTotal + snacksTotal;
+
+  const totalText = document.getElementById('bmTotalAmountText');
+  const snacksPill = document.getElementById('snacksTotalPill');
+  if (totalText) totalText.innerText = `₹${grandTotal}`;
+  if (snacksPill) snacksPill.innerText = `₹${snacksTotal} in snacks`;
 }
 
-function updateTotalPayable() {
+async function submitBooking() {
   if (!state.currentBookingVenue) return;
 
-  const rate = state.currentBookingVenue.pricePerHour || 150;
-  const isSwimming = state.currentBookingVenue.gamesOffered && state.currentBookingVenue.gamesOffered.some(g => g.toLowerCase().includes('swim'));
-  const isVolleyball = state.currentBookingVenue.gamesOffered && state.currentBookingVenue.gamesOffered.some(g => g.toLowerCase().includes('volley'));
-
-  let count = 1;
-  if (isSwimming) {
-    count = state.swimmingSpots;
-  } else if (!isVolleyball) {
-    count = state.selectedSeats.length > 0 ? state.selectedSeats.length : 1;
-  }
-
-  const seatCost = rate * count;
-  const snacksCost = getSnacksTotal();
-  const total = seatCost + snacksCost;
-
-  document.getElementById('snacksTotalPill').innerText = `₹${snacksCost} in snacks`;
-  document.getElementById('bmTotalAmountText').innerText = `₹${total}`;
-}
-
-// ==========================================
-// SUBMIT BOOKING & DIGITAL QR PASS
-// ==========================================
-async function submitBooking() {
   const venue = state.currentBookingVenue;
-  if (!venue) return;
-
   const playerName = document.getElementById('bmPlayerName').value.trim();
   const phone = document.getElementById('bmPlayerPhone').value.trim();
   const paymentMethod = document.querySelector('input[name="bmPaymentMethod"]:checked').value;
@@ -846,47 +1754,49 @@ async function submitBooking() {
     return;
   }
 
-  const isSwimming = venue.gamesOffered && venue.gamesOffered.some(g => g.toLowerCase().includes('swim'));
-  const isVolleyball = venue.gamesOffered && venue.gamesOffered.some(g => g.toLowerCase().includes('volley'));
-  const isOnline = venue.category === 'Online Gaming' || (!isSwimming && !isVolleyball);
+  const isOnline = venue.category === 'Online Gaming' || venue.category === 'Both';
+  const gamesList = venue.gamesOffered || [];
+  const isSwimming = gamesList.some(g => g.toLowerCase().includes('swim'));
 
   if (isOnline && state.selectedSeats.length === 0) {
-    alert('Please select at least 1 gaming seat station from the visual seat map.');
+    alert('Please select at least one gaming seat from the interactive seat map.');
     return;
   }
 
-  if (isSwimming && state.swimmingSpots <= 0) {
-    alert('No swimming slots available for this batch.');
-    return;
-  }
-
-  if (isVolleyball && state.currentAvailability && state.currentAvailability.courtOccupiedForSlot) {
-    alert('The court is already occupied for this time slot. Please pick another hourly slot.');
+  if (!isOnline && !isSwimming && state.currentAvailability && !state.currentAvailability.courtEmpty) {
+    alert('This court is occupied for the selected slot. Please choose another time slot.');
     return;
   }
 
   const confirmBtn = document.getElementById('bmConfirmBtn');
   confirmBtn.disabled = true;
-  confirmBtn.innerHTML = `<span>Reserving in MongoDB...</span>`;
+  confirmBtn.innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i><span>Confirming in MongoDB...</span>`;
+
+  // Build snacks array
+  const snacksOrdered = [];
+  for (const [id, qty] of Object.entries(state.selectedSnacks)) {
+    const item = SNACK_MENU.find(m => m.id === id);
+    if (item && qty > 0) {
+      snacksOrdered.push({ id: item.id, name: item.name, price: item.price, qty });
+    }
+  }
+
+  const payload = {
+    userId: state.currentUser ? (state.currentUser.id || state.currentUser._id) : undefined,
+    venueId: venue._id,
+    playerName,
+    phone,
+    date: state.selectedDate,
+    timeSlot: state.selectedSlot,
+    seats: isOnline ? state.selectedSeats : [],
+    spotsCount: isSwimming ? state.swimmingSpots : 1,
+    paymentMethod,
+    snacks: snacksOrdered,
+    snacksTotal: calculateSnacksTotal(),
+    sessionId: CLIENT_SESSION_ID
+  };
 
   try {
-    const snacksList = getSelectedSnacksList();
-    const snacksTotal = getSnacksTotal();
-
-    const payload = {
-      venueId: venue._id,
-      playerName,
-      phone,
-      date: state.selectedDate,
-      timeSlot: state.selectedSlot,
-      seats: isOnline ? state.selectedSeats : [],
-      spotsCount: isSwimming ? state.swimmingSpots : 1,
-      paymentMethod,
-      snacks: snacksList,
-      snacksTotal,
-      sessionId: CLIENT_SESSION_ID
-    };
-
     const res = await fetch('/api/bookings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -894,95 +1804,209 @@ async function submitBooking() {
     });
 
     const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      alert(`Booking Failed: ${data.error || 'Server error'}`);
-      confirmBtn.disabled = false;
-      confirmBtn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span>Confirm & Generate Pass</span>`;
-      if (window.lucide) lucide.createIcons();
-      return;
+    if (data.success) {
+      closeBookingModal();
+      openTicketModal(data.booking);
+      await fetchBookings();
+      await fetchVenues();
+      await fetchOwnerInsights();
+    } else {
+      alert(`Booking failed: ${data.error || 'Server error'}`);
     }
-
-    stopSeatLockCountdown();
-    closeBookingModal();
-
-    confirmBtn.disabled = false;
-    confirmBtn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span>Confirm & Generate Pass</span>`;
-
-    // Show Digital QR Ticket Pass Modal
-    showDigitalTicket(data.booking);
-
-    // Refresh tickets and explore list
-    await fetchBookings();
-    await fetchVenues();
-    await fetchActivityLogsMini();
-
   } catch (err) {
-    alert('Error connecting to backend API: ' + err.message);
+    alert(`Booking failed: ${err.message}`);
+  } finally {
     confirmBtn.disabled = false;
     confirmBtn.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4"></i><span>Confirm & Generate Pass</span>`;
+    if (window.lucide) lucide.createIcons();
   }
 }
 
-// Display Digital Entry Pass Receipt Modal
-function showDigitalTicket(booking) {
+// ==========================================
+// 6. DIGITAL QR ENTRY PASS, CANCELLATION & TICKETS
+// ==========================================
+async function fetchBookings() {
+  try {
+    const res = await fetch('/api/bookings');
+    const data = await res.json();
+    if (data.success) {
+      state.allBookings = data.bookings || [];
+      renderBookings(state.allBookings);
+
+      const badge = document.getElementById('ticketCountBadge');
+      const badgeMobile = document.getElementById('ticketCountBadgeMobile');
+      if (badge) badge.innerText = state.allBookings.length;
+      if (badgeMobile) badgeMobile.innerText = state.allBookings.length;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch bookings:', err);
+  }
+}
+
+function renderBookings(bookings) {
+  const grid = document.getElementById('ticketsGrid');
+  const noNotice = document.getElementById('noTicketsNotice');
+
+  if (bookings.length === 0) {
+    if (grid) grid.innerHTML = '';
+    if (noNotice) noNotice.classList.remove('hidden');
+    return;
+  }
+  if (noNotice) noNotice.classList.add('hidden');
+
+  if (!grid) return;
+
+  grid.innerHTML = bookings.map(b => {
+    const isCancelled = b.status === 'Cancelled';
+    const isCheckedIn = b.checkInStatus === 'Checked-In';
+    const reservedText = (b.seats && b.seats.length > 0)
+      ? `Seats: ${b.seats.join(', ')}`
+      : `${b.spotsCount || 1} Court/Pool Spot(s)`;
+
+    let statusBadgeHtml = '';
+    if (isCancelled) {
+      statusBadgeHtml = `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-rose-100 text-rose-800">Cancelled (Refunded)</span>`;
+    } else if (isCheckedIn) {
+      statusBadgeHtml = `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">Checked-In</span>`;
+    } else {
+      statusBadgeHtml = `<span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-blue-100 text-blue-800">Confirmed</span>`;
+    }
+
+    return `
+      <div class="digital-pass p-5 bg-white space-y-4 ${isCancelled ? 'opacity-70 bg-slate-50' : ''}">
+        
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center space-x-2">
+            <span class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold text-xs">GH</span>
+            <span class="font-bold text-slate-900">${b.venueName}</span>
+          </div>
+          ${statusBadgeHtml}
+        </div>
+
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <div class="text-[10px] uppercase font-bold text-slate-400">Booking ID</div>
+            <div class="text-xl font-black ${isCancelled ? 'text-slate-400 line-through' : 'text-blue-600'}">${b.bookingId}</div>
+            <div class="text-xs font-bold text-slate-800 mt-1">${b.playerName}</div>
+            <div class="text-xs text-slate-500">${b.date} • ${b.timeSlot}</div>
+            <div class="text-xs font-semibold text-indigo-700 mt-1">${reservedText}</div>
+          </div>
+
+          <!-- QR Thumbnail -->
+          <div class="shrink-0 text-center">
+            ${
+              b.qrCodeData
+                ? `<img src="${b.qrCodeData}" alt="QR" class="w-20 h-20 rounded-lg border border-slate-200 p-1 bg-white ${isCancelled ? 'grayscale' : ''}">`
+                : `<div class="w-20 h-20 bg-slate-100 rounded-lg flex items-center justify-center text-xs font-bold text-slate-400">QR CODE</div>`
+            }
+          </div>
+        </div>
+
+        <div class="pt-3 border-t border-dashed border-slate-200 flex items-center justify-between text-xs">
+          <span class="text-slate-500 font-medium">Total: <strong class="text-slate-900">₹${b.totalAmount}</strong> (${b.paymentMethod})</span>
+          <div class="flex items-center space-x-2">
+            <button onclick='openTicketModal(${JSON.stringify(b)})' class="px-3 py-1 bg-slate-900 hover:bg-blue-600 text-white rounded-lg text-xs font-bold transition">
+              View Pass
+            </button>
+            ${
+              !isCancelled && !isCheckedIn
+                ? `<button onclick="cancelBooking('${b.bookingId}')" class="px-2.5 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg text-xs font-bold transition flex items-center space-x-1" title="Cancel & Free Up Slot">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                    <span>Cancel</span>
+                  </button>`
+                : ''
+            }
+          </div>
+        </div>
+
+      </div>
+    `;
+  }).join('');
+
+  if (window.lucide) lucide.createIcons();
+}
+
+async function cancelBooking(bookingId) {
+  const confirmCancel = confirm(`Are you sure you want to cancel booking ${bookingId}?\nThis will immediately free up your reserved seat/spot in MongoDB.`);
+  if (!confirmCancel) return;
+
+  try {
+    const res = await fetch(`/api/bookings/${encodeURIComponent(bookingId)}/cancel`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' }
+    });
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Booking ${bookingId} has been cancelled successfully.\nReserved seats/slots are now freed in MongoDB!`);
+      await fetchBookings();
+      await fetchVenues();
+      await fetchOwnerInsights();
+    } else {
+      alert(`Cancellation failed: ${data.error || 'Server error'}`);
+    }
+  } catch (err) {
+    alert(`Cancellation error: ${err.message}`);
+  }
+}
+
+function filterMyTickets() {
+  const query = document.getElementById('ticketSearchInput').value.trim().toLowerCase();
+  if (!query) {
+    renderBookings(state.allBookings);
+    return;
+  }
+
+  const filtered = state.allBookings.filter(b =>
+    (b.phone && b.phone.toLowerCase().includes(query)) ||
+    (b.bookingId && b.bookingId.toLowerCase().includes(query)) ||
+    (b.playerName && b.playerName.toLowerCase().includes(query))
+  );
+  renderBookings(filtered);
+}
+
+function openTicketModal(booking) {
   document.getElementById('dtBookingId').innerText = booking.bookingId;
   document.getElementById('dtVenueName').innerText = booking.venueName;
   document.getElementById('dtPlayerName').innerText = booking.playerName;
   document.getElementById('dtPhone').innerText = booking.phone;
-  document.getElementById('dtSlot').innerText = `${booking.date} (${booking.timeSlot})`;
+  document.getElementById('dtSlot').innerText = `${booking.date}, ${booking.timeSlot}`;
+  document.getElementById('dtSeats').innerText = (booking.seats && booking.seats.length > 0)
+    ? booking.seats.join(', ')
+    : `${booking.spotsCount || 1} Spot(s)`;
   document.getElementById('dtPaymentMethod').innerText = booking.paymentMethod;
   document.getElementById('dtTotalAmount').innerText = `₹${booking.totalAmount}`;
 
-  // Reserved spots/seats text
-  const seatsText = booking.seats && booking.seats.length > 0
-    ? booking.seats.join(', ')
-    : `${booking.spotsCount || 1} Spot(s) / Full Court`;
-  document.getElementById('dtSeats').innerText = seatsText;
-
-  // Status badge
-  const isPaid = booking.paymentMethod === 'Pay Online';
-  const badge = document.getElementById('dtStatusBadge');
-  if (isPaid) {
-    badge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300';
-    badge.innerText = 'PAID ONLINE';
-  } else {
-    badge.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300';
-    badge.innerText = 'PAY AT VENUE (CASH)';
-  }
-
-  // Check-In Stamp
+  // Status Stamp
   const checkInStamp = document.getElementById('dtCheckInStamp');
-  if (booking.checkInStatus === 'Checked-In') {
-    checkInStamp.classList.remove('hidden');
-  } else {
-    checkInStamp.classList.add('hidden');
-  }
-
-  // Snacks section
-  const snacksSection = document.getElementById('dtSnacksSection');
-  const snacksListEl = document.getElementById('dtSnacksList');
-  if (Array.isArray(booking.snacks) && booking.snacks.length > 0) {
-    snacksSection.classList.remove('hidden');
-    snacksListEl.innerHTML = booking.snacks.map(s => `<div>• ${s.qty}x ${s.name} (₹${s.price * s.qty})</div>`).join('');
-  } else {
-    snacksSection.classList.add('hidden');
+  if (checkInStamp) {
+    if (booking.checkInStatus === 'Checked-In') {
+      checkInStamp.classList.remove('hidden');
+    } else {
+      checkInStamp.classList.add('hidden');
+    }
   }
 
   // QR Code Image
   const qrImg = document.getElementById('dtQrImage');
-  if (booking.qrCodeData && booking.qrCodeData.startsWith('data:image')) {
-    qrImg.src = booking.qrCodeData;
-  } else if (window.GameHubQR) {
-    const qrPayload = JSON.stringify({
-      ticket: booking.bookingId,
-      venue: booking.venueName,
-      player: booking.playerName,
-      date: booking.date,
-      slot: booking.timeSlot,
-      seats: seatsText
-    });
-    qrImg.src = window.GameHubQR.generateUri(qrPayload, 180);
+  if (qrImg) {
+    if (booking.qrCodeData) {
+      qrImg.src = booking.qrCodeData;
+      qrImg.classList.remove('hidden');
+    } else {
+      qrImg.classList.add('hidden');
+    }
+  }
+
+  // Pre-ordered Snacks list
+  const snacksSec = document.getElementById('dtSnacksSection');
+  const snacksList = document.getElementById('dtSnacksList');
+  if (snacksSec && snacksList) {
+    if (Array.isArray(booking.snacks) && booking.snacks.length > 0) {
+      snacksSec.classList.remove('hidden');
+      snacksList.innerHTML = booking.snacks.map(s => `<div>• ${s.name} × ${s.qty} (₹${s.price * s.qty})</div>`).join('');
+    } else {
+      snacksSec.classList.add('hidden');
+    }
   }
 
   document.getElementById('ticketModal').classList.remove('hidden');
@@ -994,12 +2018,12 @@ function closeTicketModal() {
 }
 
 // ==========================================
-// FEATURE 1: RECEPTIONIST QR TICKET SCANNER
+// 7. RECEPTIONIST GATE PASS SCANNER
 // ==========================================
 function openScannerModal() {
-  document.getElementById('scannerModal').classList.remove('hidden');
-  document.getElementById('checkInResultBox').classList.add('hidden');
   document.getElementById('manualBookingIdInput').value = '';
+  document.getElementById('checkInResultBox').classList.add('hidden');
+  document.getElementById('scannerModal').classList.remove('hidden');
   if (window.lucide) lucide.createIcons();
 }
 
@@ -1010,13 +2034,13 @@ function closeScannerModal() {
 async function verifyCheckInFromInput() {
   const code = document.getElementById('manualBookingIdInput').value.trim();
   if (!code) {
-    alert('Please enter or scan a Booking ID (e.g. #GH-84920)');
+    alert('Please enter a Booking ID or scan a QR code.');
     return;
   }
 
-  const btn = document.getElementById('verifyBtn');
-  btn.disabled = true;
-  btn.innerHTML = `<span>Checking...</span>`;
+  const verifyBtn = document.getElementById('verifyBtn');
+  verifyBtn.disabled = true;
+  verifyBtn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i><span>Checking...</span>`;
 
   try {
     const res = await fetch('/api/bookings/verify-checkin', {
@@ -1026,216 +2050,125 @@ async function verifyCheckInFromInput() {
     });
 
     const data = await res.json();
-    btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i><span>Verify</span>`;
-
     const resultBox = document.getElementById('checkInResultBox');
     resultBox.classList.remove('hidden');
 
-    if (!res.ok || !data.success) {
-      resultBox.className = 'rounded-2xl p-4 border border-rose-200 bg-rose-50 text-rose-900 space-y-2';
-      resultBox.innerHTML = `
-        <div class="flex items-center space-x-2 font-bold text-rose-900 text-xs sm:text-sm">
-          <i data-lucide="x-circle" class="w-5 h-5 text-rose-600 shrink-0"></i>
-          <span>INVALID PASS / TICKET NOT FOUND</span>
-        </div>
-        <p class="text-xs text-rose-700">${data.error || 'No matching booking in MongoDB.'}</p>
-      `;
-    } else if (data.alreadyCheckedIn) {
+    if (data.success) {
       const b = data.booking;
-      resultBox.className = 'rounded-2xl p-4 border border-amber-200 bg-amber-50 text-amber-900 space-y-2';
-      resultBox.innerHTML = `
-        <div class="flex items-center space-x-2 font-bold text-amber-900 text-xs sm:text-sm">
-          <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 shrink-0"></i>
-          <span>TICKET ALREADY SCANNED & CHECKED IN</span>
-        </div>
-        <p class="text-xs text-amber-800">${data.message}</p>
-        <div class="text-xs text-slate-700 border-t border-amber-200/60 pt-2 grid grid-cols-2 gap-1.5">
-          <div>Player: <strong>${b.playerName}</strong></div>
-          <div>Venue: <strong>${b.venueName}</strong></div>
-          <div>Time: <strong>${b.timeSlot}</strong></div>
-          <div>Seats/Spots: <strong>${(b.seats && b.seats.length > 0) ? b.seats.join(', ') : b.spotsCount + ' spots'}</strong></div>
-        </div>
-      `;
-    } else {
-      const b = data.booking;
-      const snacksNote = b.snacks && b.snacks.length > 0
-        ? `<div class="mt-2 p-2 rounded-xl bg-amber-50 text-amber-900 border border-amber-200 text-xs">
-            <strong>F&B To Serve:</strong> ${b.snacks.map(s => `${s.qty}x ${s.name}`).join(', ')}
-           </div>`
-        : '';
+      const isAlready = data.alreadyCheckedIn;
 
-      resultBox.className = 'rounded-2xl p-4 border border-emerald-200 bg-emerald-50 text-emerald-900 space-y-2';
+      resultBox.className = isAlready
+        ? 'rounded-2xl p-4 border bg-amber-50 border-amber-300 text-amber-900 space-y-2'
+        : 'rounded-2xl p-4 border bg-emerald-50 border-emerald-300 text-emerald-900 space-y-2';
+
       resultBox.innerHTML = `
-        <div class="flex items-center space-x-2 font-bold text-emerald-900 text-xs sm:text-sm">
-          <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-600 shrink-0"></i>
-          <span>ENTRY PERMITTED & CHECKED IN!</span>
+        <div class="flex items-center space-x-2 font-bold text-sm">
+          <i data-lucide="${isAlready ? 'alert-triangle' : 'shield-check'}" class="w-5 h-5 ${isAlready ? 'text-amber-600' : 'text-emerald-600'}"></i>
+          <span>${data.message}</span>
         </div>
-        <p class="text-xs text-emerald-800">${data.message}</p>
-        <div class="text-xs text-slate-700 border-t border-emerald-200/60 pt-2 grid grid-cols-2 gap-1.5">
-          <div>Booking ID: <strong class="text-blue-600">${b.bookingId}</strong></div>
-          <div>Player: <strong>${b.playerName}</strong></div>
-          <div>Phone: <strong>${b.phone}</strong></div>
-          <div>Payment: <strong>${b.paymentStatus}</strong></div>
-          <div>Slot: <strong>${b.date} (${b.timeSlot})</strong></div>
-          <div>Seats: <strong class="text-blue-600">${(b.seats && b.seats.length > 0) ? b.seats.join(', ') : b.spotsCount + ' spots'}</strong></div>
+        <div class="text-xs space-y-1 pt-1 border-t ${isAlready ? 'border-amber-200' : 'border-emerald-200'}">
+          <div>Player: <strong>${b.playerName}</strong> (${b.phone})</div>
+          <div>Venue: <strong>${b.venueName}</strong></div>
+          <div>Slot: <strong>${b.date} • ${b.timeSlot}</strong></div>
+          <div>Reserved: <strong>${b.seats && b.seats.length > 0 ? b.seats.join(', ') : `${b.spotsCount || 1} spots`}</strong></div>
+          <div>Payment: <strong>${b.paymentStatus} (₹${b.totalAmount})</strong></div>
         </div>
-        ${snacksNote}
+      `;
+
+      await fetchBookings();
+    } else {
+      resultBox.className = 'rounded-2xl p-4 border bg-rose-50 border-rose-300 text-rose-900 space-y-1';
+      resultBox.innerHTML = `
+        <div class="flex items-center space-x-2 font-bold text-sm">
+          <i data-lucide="x-circle" class="w-5 h-5 text-rose-600"></i>
+          <span>Entry Denied: Invalid Pass</span>
+        </div>
+        <p class="text-xs">${data.error || 'No matching booking found in MongoDB.'}</p>
       `;
     }
-
-    if (window.lucide) lucide.createIcons();
-
-    // Refresh tickets list
-    await fetchBookings();
-    await fetchActivityLogsMini();
-
   } catch (err) {
-    alert('Verification error: ' + err.message);
-    btn.disabled = false;
-    btn.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i><span>Verify</span>`;
+    alert(`Verification failed: ${err.message}`);
+  } finally {
+    verifyBtn.disabled = false;
+    verifyBtn.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4"></i><span>Verify Entry</span>`;
+    if (window.lucide) lucide.createIcons();
   }
 }
 
 // ==========================================
-// FEATURE 2: SQUAD FINDER & MATCHMAKING
+// 8. SQUAD FINDER & MATCHMAKING
 // ==========================================
 async function fetchSquads() {
   try {
-    const params = new URLSearchParams();
-    if (state.squadCategoryFilter !== 'All') {
-      params.append('category', state.squadCategoryFilter);
-    }
-
-    const res = await fetch(`/api/squads?${params.toString()}`);
+    const res = await fetch('/api/squads');
     const data = await res.json();
-
     if (data.success) {
       state.squads = data.squads || [];
       renderSquads(state.squads);
-
-      const badge = document.getElementById('squadCountBadge');
-      const badgeMobile = document.getElementById('squadCountBadgeMobile');
-      const countLabel = document.getElementById('squadCountLabel');
-
-      if (badge) badge.innerText = state.squads.length;
-      if (badgeMobile) badgeMobile.innerText = state.squads.length;
-      if (countLabel) countLabel.innerText = state.squads.length;
     }
-  } catch (err) {
-    console.error('Error fetching squads:', err);
+  } catch (e) {
+    console.warn('Failed to fetch squads:', e);
   }
-}
-
-function filterSquadCategory(cat) {
-  state.squadCategoryFilter = cat;
-
-  const btnAll = document.getElementById('sq-cat-all');
-  const btnOnline = document.getElementById('sq-cat-online');
-  const btnOffline = document.getElementById('sq-cat-offline');
-
-  const active = 'px-3 py-1.5 rounded-lg font-bold bg-slate-900 text-white';
-  const inactive = 'px-3 py-1.5 rounded-lg font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200';
-
-  btnAll.className = cat === 'All' ? active : inactive;
-  btnOnline.className = cat === 'Online Gaming' ? active : inactive;
-  btnOffline.className = cat === 'Offline Sports' ? active : inactive;
-
-  fetchSquads();
 }
 
 function renderSquads(squads) {
   const grid = document.getElementById('squadGrid');
-  const noSquads = document.getElementById('noSquadsNotice');
+  const countLabel = document.getElementById('squadCountLabel');
+  if (!grid) return;
 
-  if (squads.length === 0) {
-    grid.innerHTML = '';
-    noSquads.classList.remove('hidden');
+  let list = squads;
+  if (state.squadCategoryFilter !== 'All') {
+    list = list.filter(s => s.category === state.squadCategoryFilter);
+  }
+
+  if (countLabel) countLabel.innerText = list.length;
+
+  if (list.length === 0) {
+    grid.innerHTML = '<p class="col-span-full py-8 text-center text-xs text-slate-400 italic">No squad beacons in this category.</p>';
     return;
   }
-  noSquads.classList.add('hidden');
 
-  grid.innerHTML = squads.map(sq => {
-    const isOnline = sq.category === 'Online Gaming';
-    const tagClass = isOnline
-      ? 'bg-indigo-50 text-indigo-700 border-indigo-200'
-      : 'bg-emerald-50 text-emerald-700 border-emerald-200';
-
-    const membersHtml = (sq.members || []).map(m =>
-      `<span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[10px] font-semibold">👤 ${m.name}</span>`
-    ).join(' ');
-
-    const isFull = sq.spotsNeeded <= 0 || sq.status === 'Full';
-    const spotsBadge = isFull
-      ? '<span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px]">SQUAD FULL</span>'
-      : `<span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">${sq.spotsNeeded} Spot(s) Open</span>`;
-
-    const whatsappLink = `https://api.whatsapp.com/send?phone=${sq.hostPhone.replace(/[^0-9]/g, '')}&text=${encodeURIComponent('Hi ' + sq.hostName + ', I saw your GameHub squad beacon for ' + sq.game + ' at ' + sq.venueName + '!')}`;
+  grid.innerHTML = list.map(s => {
+    const isFull = s.spotsNeeded <= 0 || s.status === 'Full';
+    const isOnline = s.category === 'Online Gaming';
+    const waLink = `https://wa.me/${s.hostPhone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hi ${s.hostName}, saw your GameHub beacon for ${s.game} at ${s.venueName}. Let's play!`)}`;
 
     return `
-      <div class="gamehub-card p-5 bg-white border border-slate-200 rounded-2xl flex flex-col justify-between space-y-4 hover:border-indigo-400 transition">
-        
+      <div class="gamehub-card p-5 space-y-4 flex flex-col justify-between">
         <div class="space-y-3">
-          <!-- Top Tags -->
           <div class="flex items-center justify-between">
-            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${tagClass}">
-              ${sq.game}
+            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isOnline ? 'tag-online' : 'tag-offline'}">
+              ${s.category} • ${s.game}
             </span>
-            <div>${spotsBadge}</div>
+            <span class="text-[11px] font-bold px-2 py-0.5 rounded-full ${isFull ? 'badge-occupied' : 'badge-available'}">
+              ${isFull ? 'Squad Full' : `Need ${s.spotsNeeded} Players`}
+            </span>
           </div>
 
-          <!-- Title & Venue -->
-          <div>
-            <h3 class="text-sm sm:text-base font-bold text-slate-900 leading-snug">${sq.title}</h3>
-            <p class="text-xs text-slate-500 flex items-center space-x-1 mt-1">
-              <i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i>
-              <span>${sq.venueName} • ${sq.city}</span>
-            </p>
+          <h3 class="text-base font-bold text-slate-900">${s.title}</h3>
+
+          <div class="text-xs text-slate-600 space-y-1">
+            <div class="flex items-center space-x-1.5"><i data-lucide="map-pin" class="w-3.5 h-3.5 text-slate-400"></i><span>${s.venueName}, ${s.city}</span></div>
+            <div class="flex items-center space-x-1.5"><i data-lucide="calendar" class="w-3.5 h-3.5 text-slate-400"></i><span>${s.date} • ${s.timeSlot}</span></div>
+            <div class="flex items-center space-x-1.5"><i data-lucide="shield" class="w-3.5 h-3.5 text-slate-400"></i><span>Skill: ${s.skillLevel}</span></div>
           </div>
 
-          <!-- Slot & Skill Level -->
-          <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs space-y-1">
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Match Time:</span>
-              <strong class="text-slate-800">${sq.date} • ${sq.timeSlot}</strong>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Skill Level:</span>
-              <strong class="text-indigo-600">${sq.skillLevel}</strong>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-400">Host / Captain:</span>
-              <strong class="text-slate-800">${sq.hostName}</strong>
-            </div>
-          </div>
-
-          <!-- Description -->
-          ${sq.description ? `<p class="text-xs text-slate-600 line-clamp-2 italic">"${sq.description}"</p>` : ''}
-
-          <!-- Current Members -->
-          <div>
-            <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Joined Players:</span>
-            <div class="flex flex-wrap gap-1">
-              ${membersHtml}
-            </div>
-          </div>
+          <p class="text-xs text-slate-500">${s.description || 'Friendly competitive match.'}</p>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="pt-2 border-t border-slate-100 flex items-center space-x-2">
-          ${isFull
-            ? `<button disabled class="flex-1 py-2 bg-slate-100 text-slate-400 font-bold rounded-xl text-xs cursor-not-allowed">Squad Full</button>`
-            : `<button onclick="openJoinSquadModal('${sq._id}')" class="flex-1 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-sm flex items-center justify-center space-x-1">
-                 <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
-                 <span>Join Squad</span>
-               </button>`
-          }
-          <a href="${whatsappLink}" target="_blank" rel="noopener noreferrer" class="py-2 px-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold rounded-xl text-xs transition border border-emerald-200 flex items-center justify-center space-x-1" title="Message Captain on WhatsApp">
-            <i data-lucide="message-circle" class="w-3.5 h-3.5"></i>
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+          <a href="${waLink}" target="_blank" class="flex-1 py-2 px-3 border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-xl text-xs font-bold transition text-center flex items-center justify-center space-x-1">
+            <i data-lucide="message-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
             <span>Chat</span>
           </a>
+          ${
+            !isFull
+              ? `<button onclick='openJoinSquadModal(${JSON.stringify(s)})' class="flex-1 py-2 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold transition text-center">
+                  Join Squad
+                </button>`
+              : `<span class="text-xs font-bold text-slate-400 py-2">Full</span>`
+          }
         </div>
-
       </div>
     `;
   }).join('');
@@ -1243,30 +2176,33 @@ function renderSquads(squads) {
   if (window.lucide) lucide.createIcons();
 }
 
+function filterSquadCategory(cat) {
+  state.squadCategoryFilter = cat;
+  renderSquads(state.squads);
+}
+
 function openCreateSquadModal() {
   updateSquadVenuesDropdown();
-  document.getElementById('sqDate').value = getDateOffset(0);
-  document.getElementById('createSquadModal').classList.remove('hidden');
+  const d = document.getElementById('sqDate');
+  if (d) d.value = getDateOffset(0);
+  const modal = document.getElementById('createSquadModal');
+  if (modal) modal.classList.remove('hidden');
   if (window.lucide) lucide.createIcons();
 }
 
 function closeCreateSquadModal() {
-  document.getElementById('createSquadModal').classList.add('hidden');
+  const modal = document.getElementById('createSquadModal');
+  if (modal) modal.classList.add('hidden');
 }
 
 function updateSquadVenuesDropdown() {
-  const cat = document.getElementById('sqCategory').value;
   const select = document.getElementById('sqVenueSelect');
-  const filtered = state.venues.filter(v => cat === 'Online Gaming' ? (v.category === 'Online Gaming' || v.category === 'Both') : (v.category === 'Offline Sports' || v.category === 'Both'));
+  if (!select) return;
 
-  select.innerHTML = (filtered.length > 0 ? filtered : state.venues).map(v => `
-    <option value="${v._id}" data-city="${v.city}">${v.shopName} (${v.city})</option>
-  `).join('');
+  const cat = document.getElementById('sqCategory').value;
+  const filtered = state.venues.filter(v => cat === 'All' || v.category === cat || v.category === 'Both');
 
-  if (select.options.length > 0) {
-    const selectedCity = select.options[0].getAttribute('data-city');
-    if (selectedCity) document.getElementById('sqCity').value = selectedCity;
-  }
+  select.innerHTML = filtered.map(v => `<option value="${v._id}">${v.shopName} (${v.city})</option>`).join('');
 }
 
 async function handleCreateSquad(e) {
@@ -1275,69 +2211,69 @@ async function handleCreateSquad(e) {
   const title = document.getElementById('sqTitle').value.trim();
   const category = document.getElementById('sqCategory').value;
   const game = document.getElementById('sqGame').value.trim();
-  const venueSelect = document.getElementById('sqVenueSelect');
-  const venueId = venueSelect.value;
-  const venueName = venueSelect.options[venueSelect.selectedIndex].text.split(' (')[0];
+  const venueId = document.getElementById('sqVenueSelect').value;
+  const venue = state.venues.find(v => String(v._id) === String(venueId));
   const city = document.getElementById('sqCity').value.trim();
   const date = document.getElementById('sqDate').value;
   const timeSlot = document.getElementById('sqSlot').value;
-  const spotsTotal = Number(document.getElementById('sqTotal').value) || 5;
-  const spotsNeeded = Number(document.getElementById('sqNeeded').value) || 2;
+  const spotsTotal = parseInt(document.getElementById('sqTotal').value, 10) || 5;
+  const spotsNeeded = parseInt(document.getElementById('sqNeeded').value, 10) || 2;
   const hostName = document.getElementById('sqHostName').value.trim();
   const hostPhone = document.getElementById('sqHostPhone').value.trim();
   const skillLevel = document.getElementById('sqSkill').value.trim() || 'All Skill Levels';
   const description = document.getElementById('sqDesc').value.trim();
 
-  try {
-    const res = await fetch('/api/squads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        title,
-        category,
-        game,
-        venueId,
-        venueName,
-        city,
-        date,
-        timeSlot,
-        spotsTotal,
-        spotsNeeded,
-        hostName,
-        hostPhone,
-        skillLevel,
-        description
-      })
-    });
+  const payload = {
+    title,
+    venueId,
+    venueName: venue ? venue.shopName : 'GameHub Complex',
+    city,
+    category,
+    game,
+    date,
+    timeSlot,
+    spotsTotal,
+    spotsNeeded,
+    hostName,
+    hostPhone,
+    skillLevel,
+    description
+  };
 
-    const data = await res.json();
-    if (data.success) {
-      alert('🎉 Match Beacon published live! Other players can now join your squad.');
-      closeCreateSquadModal();
-      await fetchSquads();
-      await fetchActivityLogsMini();
-    } else {
-      alert(data.error || 'Failed to post squad beacon');
-    }
-  } catch (err) {
-    alert('Error posting squad beacon: ' + err.message);
+  const res = await fetch('/api/squads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    alert('🎉 Squad Matchmaking Beacon posted live!');
+    closeCreateSquadModal();
+    await fetchSquads();
+    navigate('squads');
+  } else {
+    alert(data.error || 'Failed to post squad');
   }
 }
 
-function openJoinSquadModal(squadId) {
-  const sq = state.squads.find(s => String(s._id) === String(squadId));
-  if (!sq) return;
-
-  state.joiningSquad = sq;
-  document.getElementById('jsTitle').innerText = sq.title;
-  document.getElementById('jsPlayerName').value = '';
-  document.getElementById('jsPlayerPhone').value = '';
-
+function openJoinSquadModal(squad) {
+  state.joiningSquad = squad;
+  document.getElementById('jsTitle').innerText = squad.title;
+  const pName = document.getElementById('jsPlayerName');
+  const pPhone = document.getElementById('jsPlayerPhone');
+  if (state.currentUser) {
+    if (pName) pName.value = state.currentUser.name;
+    if (pPhone) pPhone.value = state.currentUser.phone;
+  } else {
+    if (pName) pName.value = '';
+    if (pPhone) pPhone.value = '';
+  }
   document.getElementById('joinSquadModal').classList.remove('hidden');
-  if (window.lucide) lucide.createIcons();
 }
 
 function closeJoinSquadModal() {
+  state.joiningSquad = null;
   document.getElementById('joinSquadModal').classList.add('hidden');
 }
 
@@ -1348,265 +2284,28 @@ async function submitJoinSquad() {
   const phone = document.getElementById('jsPlayerPhone').value.trim();
 
   if (!name || !phone) {
-    alert('Please enter your full name and contact phone.');
+    alert('Please enter your name and phone number.');
     return;
   }
 
-  try {
-    const res = await fetch(`/api/squads/${state.joiningSquad._id}/join`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, phone })
-    });
+  const res = await fetch(`/api/squads/${state.joiningSquad._id}/join`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, phone })
+  });
 
-    const data = await res.json();
-    if (data.success) {
-      alert(data.message);
-      closeJoinSquadModal();
-      await fetchSquads();
-      await fetchActivityLogsMini();
-    } else {
-      alert(data.error || 'Failed to join squad');
-    }
-  } catch (err) {
-    alert('Error joining squad: ' + err.message);
+  const data = await res.json();
+  if (data.success) {
+    alert(data.message);
+    closeJoinSquadModal();
+    await fetchSquads();
+  } else {
+    alert(data.error || 'Could not join squad');
   }
 }
 
 // ==========================================
-// MY TICKETS / BOOKINGS TAB
-// ==========================================
-async function fetchBookings() {
-  try {
-    const res = await fetch('/api/bookings');
-    const data = await res.json();
-    if (data.success) {
-      state.allBookings = data.bookings || [];
-      renderTickets(state.allBookings);
-
-      const badge = document.getElementById('ticketCountBadge');
-      const badgeMobile = document.getElementById('ticketCountBadgeMobile');
-      if (badge) badge.innerText = state.allBookings.length;
-      if (badgeMobile) badgeMobile.innerText = state.allBookings.length;
-    }
-  } catch (err) {
-    console.error('Failed to fetch bookings:', err);
-  }
-}
-
-function renderTickets(bookings) {
-  const grid = document.getElementById('ticketsGrid');
-  const empty = document.getElementById('noTicketsNotice');
-
-  if (bookings.length === 0) {
-    grid.innerHTML = '';
-    empty.classList.remove('hidden');
-    return;
-  }
-  empty.classList.add('hidden');
-
-  grid.innerHTML = bookings.map(b => {
-    const isPaid = b.paymentMethod === 'Pay Online';
-    const statusBadge = isPaid
-      ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">PAID ONLINE</span>'
-      : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300">PAY AT VENUE</span>';
-
-    const checkInBadge = b.checkInStatus === 'Checked-In'
-      ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-300">CHECKED-IN</span>'
-      : '<span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 border border-slate-200">READY</span>';
-
-    const seatsText = b.seats && b.seats.length > 0 ? b.seats.join(', ') : `${b.spotsCount || 1} spot(s)`;
-    const qrSrc = (b.qrCodeData && b.qrCodeData.startsWith('data:image'))
-      ? b.qrCodeData
-      : (window.GameHubQR ? window.GameHubQR.generateUri(b.bookingId, 120) : '');
-
-    const snacksTag = (b.snacks && b.snacks.length > 0)
-      ? `<div class="text-[11px] text-amber-700 font-medium">🍿 ${b.snacks.length} snack item(s) included</div>`
-      : '';
-
-    return `
-      <div class="gamehub-card p-5 bg-white border border-slate-200 rounded-2xl flex flex-col justify-between space-y-4 hover:border-blue-400 transition">
-        
-        <div class="flex items-start justify-between">
-          <div>
-            <div class="flex items-center space-x-2">
-              <span class="text-xs font-black text-blue-600 tracking-wider">${b.bookingId}</span>
-              ${checkInBadge}
-            </div>
-            <h3 class="text-base font-bold text-slate-900 mt-0.5">${b.venueName}</h3>
-            <p class="text-xs text-slate-500">${b.date} • ${b.timeSlot}</p>
-          </div>
-          <div>${statusBadge}</div>
-        </div>
-
-        <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
-          <div class="space-y-1 text-xs">
-            <div><span class="text-slate-400">Player:</span> <strong class="text-slate-800">${b.playerName}</strong></div>
-            <div><span class="text-slate-400">Seats/Spot:</span> <strong class="text-blue-600">${seatsText}</strong></div>
-            <div><span class="text-slate-400">Total Amount:</span> <strong class="text-emerald-700">₹${b.totalAmount}</strong></div>
-            ${snacksTag}
-          </div>
-
-          <div class="w-16 h-16 bg-white p-1 rounded-lg border border-slate-200 shrink-0">
-            <img src="${qrSrc}" alt="QR" class="w-full h-full object-contain">
-          </div>
-        </div>
-
-        <button onclick='showDigitalTicket(${JSON.stringify(b)})' class="w-full py-2 bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold rounded-xl transition flex items-center justify-center space-x-1.5">
-          <i data-lucide="qr-code" class="w-4 h-4"></i>
-          <span>View Full Digital Pass & QR</span>
-        </button>
-
-      </div>
-    `;
-  }).join('');
-
-  if (window.lucide) lucide.createIcons();
-}
-
-function filterMyTickets() {
-  const query = document.getElementById('ticketSearchInput').value.trim().toLowerCase();
-  if (!query) {
-    renderTickets(state.allBookings);
-    return;
-  }
-  const filtered = state.allBookings.filter(b =>
-    b.bookingId.toLowerCase().includes(query) ||
-    b.phone.toLowerCase().includes(query) ||
-    b.playerName.toLowerCase().includes(query) ||
-    b.venueName.toLowerCase().includes(query)
-  );
-  renderTickets(filtered);
-}
-
-// ==========================================
-// OWNER ONBOARDING & MONTHLY SUBSCRIPTION
-// ==========================================
-async function handleRegisterVenue(event) {
-  event.preventDefault();
-
-  const shopName = document.getElementById('regShopName').value.trim();
-  const ownerName = document.getElementById('regOwnerName').value.trim();
-  const phone = document.getElementById('regPhone').value.trim();
-  const city = document.getElementById('regCity').value;
-  const address = document.getElementById('regAddress').value.trim();
-  const mapUrl = document.getElementById('regMapUrl').value.trim();
-  const image = document.getElementById('regImageUrl').value.trim();
-  const category = document.querySelector('input[name="regCategory"]:checked').value;
-  const gamesRaw = document.getElementById('regGames').value.trim();
-  const totalCapacity = Number(document.getElementById('regCapacity').value) || 20;
-  const pricePerHour = Number(document.getElementById('regPrice').value) || 150;
-
-  const submitBtn = document.getElementById('regSubmitBtn');
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = `<span>Activating Listing & Saving to MongoDB...</span>`;
-
-  try {
-    const payload = {
-      shopName,
-      ownerName,
-      phone,
-      city,
-      address,
-      mapUrl,
-      image,
-      category,
-      gamesOffered: gamesRaw.split(',').map(s => s.trim()).filter(Boolean),
-      totalCapacity,
-      pricePerHour
-    };
-
-    const res = await fetch('/api/venues', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await res.json();
-
-    if (!res.ok || !data.success) {
-      alert(`Registration Failed: ${data.error || 'Server error'}`);
-      submitBtn.disabled = false;
-      submitBtn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Activate Listing & Pay ₹999</span>`;
-      return;
-    }
-
-    alert(`🎉 Success! "${shopName}" is now registered and published live with 30-Day Active Partner Status!`);
-    document.getElementById('ownerRegisterForm').reset();
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Activate Listing & Pay ₹999</span>`;
-
-    await fetchVenues();
-    navigate('explore');
-
-  } catch (err) {
-    alert('Failed to register venue: ' + err.message);
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = `<i data-lucide="shield-check" class="w-5 h-5"></i><span>Activate Listing & Pay ₹999</span>`;
-  }
-}
-
-async function fetchOwnerVenues() {
-  const container = document.getElementById('ownerVenuesList');
-  if (!container) return;
-
-  try {
-    const res = await fetch('/api/venues');
-    const data = await res.json();
-    if (!data.success) return;
-
-    const venues = data.venues || [];
-    container.innerHTML = venues.map(v => {
-      const isOccupied = v.courtStatus === 'Occupied';
-      const statusBtnClass = isOccupied
-        ? 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
-        : 'bg-emerald-100 text-emerald-800 border-emerald-300 hover:bg-emerald-200';
-      const statusIcon = isOccupied ? 'alert-circle' : 'check';
-      const nextStatus = isOccupied ? 'Empty' : 'Occupied';
-
-      return `
-        <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center justify-between gap-3">
-          <div class="truncate">
-            <h4 class="text-xs font-bold text-slate-800 truncate">${v.shopName}</h4>
-            <span class="text-[11px] text-slate-500">${v.city} • ${v.category}</span>
-          </div>
-
-          <button onclick="toggleCourtStatus('${v._id}', '${nextStatus}')" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition flex items-center space-x-1.5 ${statusBtnClass}" title="Click to change live court status in MongoDB">
-            <i data-lucide="${statusIcon}" class="w-3.5 h-3.5"></i>
-            <span>${v.courtStatus || 'Empty'}</span>
-          </button>
-        </div>
-      `;
-    }).join('');
-
-    if (window.lucide) lucide.createIcons();
-
-  } catch (err) {
-    console.error('Failed to load owner venues:', err);
-  }
-}
-
-async function toggleCourtStatus(venueId, newStatus) {
-  try {
-    const res = await fetch(`/api/venues/${venueId}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ courtStatus: newStatus })
-    });
-    const data = await res.json();
-
-    if (data.success) {
-      await fetchOwnerVenues();
-      await fetchVenues();
-      await fetchActivityLogsMini();
-    }
-  } catch (err) {
-    alert('Failed to update court status: ' + err.message);
-  }
-}
-
-// ==========================================
-// LIVE ACTIVITY AUDIT LOG
+// 9. AUDIT LOGS MODAL & MINI FEED
 // ==========================================
 async function fetchActivityLogsMini() {
   const container = document.getElementById('ownerMiniLogs');
@@ -1615,88 +2314,75 @@ async function fetchActivityLogsMini() {
   try {
     const res = await fetch('/api/activity-logs');
     const data = await res.json();
-    if (!data.success) return;
+    const logs = data.logs || [];
 
-    const logs = (data.logs || []).slice(0, 4);
-    container.innerHTML = logs.map(l => `
-      <div class="pb-2 border-b border-slate-100 last:border-0">
-        <div class="flex items-center justify-between">
-          <span class="font-bold text-slate-800 text-[11px]">${l.action}</span>
-          <span class="text-[10px] text-slate-400">${formatTimeAgo(l.timestamp)}</span>
+    container.innerHTML = logs.slice(0, 5).map(l => `
+      <div class="p-2 rounded-xl border border-slate-100 bg-slate-50 flex items-start space-x-2">
+        <i data-lucide="check-circle" class="w-3.5 h-3.5 text-blue-500 shrink-0 mt-0.5"></i>
+        <div>
+          <div class="font-bold text-slate-800 text-[11px]">${l.action}</div>
+          <div class="text-[10px] text-slate-500">${new Date(l.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • ${l.details || ''}</div>
         </div>
-        <p class="text-[11px] text-slate-500 line-clamp-1 mt-0.5">${l.details}</p>
       </div>
     `).join('');
-  } catch (err) {
-    console.warn('Mini logs error:', err.message);
-  }
+
+    if (window.lucide) lucide.createIcons();
+  } catch (e) {}
 }
 
 async function openActivityLogsModal() {
+  const modal = document.getElementById('activityLogsModal');
   const container = document.getElementById('auditLogsContainer');
-  container.innerHTML = `<div class="text-center py-6 text-xs text-slate-400">Loading MongoDB audit trail...</div>`;
-  document.getElementById('activityLogsModal').classList.remove('hidden');
+  modal.classList.remove('hidden');
+
+  container.innerHTML = '<p class="text-xs text-slate-400">Loading MongoDB audit trail...</p>';
 
   try {
     const res = await fetch('/api/activity-logs');
     const data = await res.json();
+    const logs = data.logs || [];
 
-    if (!data.success || data.logs.length === 0) {
-      container.innerHTML = `<div class="text-center py-8 text-xs text-slate-500">No activity logs recorded yet.</div>`;
+    if (logs.length === 0) {
+      container.innerHTML = '<p class="text-xs text-slate-400 italic">No activity logs recorded yet.</p>';
       return;
     }
 
-    container.innerHTML = data.logs.map(log => {
-      let icon = 'activity';
-      let iconColor = 'text-blue-500 bg-blue-50';
+    container.innerHTML = logs.map(l => {
+      const isBooking = l.type === 'booking';
+      const isSub = l.type === 'subscription';
+      const isCourt = l.type === 'court_status';
+      const isReview = l.type === 'review';
+      const isUser = l.type === 'user';
 
-      if (log.type === 'booking') {
-        icon = 'ticket';
-        iconColor = 'text-emerald-600 bg-emerald-50';
-      } else if (log.type === 'court_status') {
-        icon = 'sliders';
-        iconColor = 'text-amber-600 bg-amber-50';
-      } else if (log.type === 'subscription') {
-        icon = 'credit-card';
-        iconColor = 'text-indigo-600 bg-indigo-50';
-      } else if (log.type === 'venue') {
-        icon = 'store';
-        iconColor = 'text-purple-600 bg-purple-50';
-      }
+      const badgeColor = isBooking ? 'bg-blue-100 text-blue-800' :
+        (isSub ? 'bg-amber-100 text-amber-800' :
+        (isCourt ? 'bg-emerald-100 text-emerald-800' :
+        (isReview ? 'bg-purple-100 text-purple-800' :
+        (isUser ? 'bg-teal-100 text-teal-800' : 'bg-slate-100 text-slate-700'))));
 
       return `
-        <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-2xl flex items-start space-x-3 text-xs">
-          <div class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${iconColor}">
-            <i data-lucide="${icon}" class="w-4 h-4"></i>
+        <div class="p-3.5 rounded-2xl border border-slate-200 bg-slate-50 flex items-start space-x-3 text-xs">
+          <div class="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-700 font-bold shrink-0">
+            <i data-lucide="${isBooking ? 'ticket' : (isSub ? 'credit-card' : (isReview ? 'star' : (isUser ? 'user' : 'activity')))}" class="w-4 h-4 text-blue-600"></i>
           </div>
-          <div class="flex-1">
+          <div class="flex-1 space-y-0.5">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-900">${log.action}</span>
-              <span class="text-[10px] text-slate-400">${new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
+              <span class="font-bold text-slate-900">${l.action}</span>
+              <span class="text-[10px] font-bold px-2 py-0.2 rounded-full ${badgeColor}">${l.type}</span>
             </div>
-            <p class="text-slate-600 mt-1">${log.details}</p>
+            <p class="text-slate-600 text-[11px]">${l.details}</p>
+            <span class="text-[10px] text-slate-400">${new Date(l.timestamp).toLocaleString()}</span>
           </div>
         </div>
       `;
     }).join('');
 
     if (window.lucide) lucide.createIcons();
-
-  } catch (err) {
-    container.innerHTML = `<div class="text-center text-xs text-rose-500 py-4">Error loading activity logs: ${err.message}</div>`;
+  } catch (e) {
+    container.innerHTML = '<p class="text-xs text-rose-500">Failed to load audit trail.</p>';
   }
 }
 
 function closeActivityLogsModal() {
   document.getElementById('activityLogsModal').classList.add('hidden');
-}
-
-function formatTimeAgo(timestamp) {
-  const diff = Date.now() - new Date(timestamp).getTime();
-  const mins = Math.floor(diff / 60000);
-  if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
 }
