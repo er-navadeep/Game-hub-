@@ -1,0 +1,263 @@
+/* GameHub Modern Design System */
+:root {
+  --bg-primary: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --text-main: #0F172A;
+  --text-muted: #64748B;
+  --border-light: #E2E8F0;
+  --border-focus: #3B82F6;
+  --brand-primary: #2563EB;
+  --brand-primary-hover: #1D4ED8;
+  --status-available-bg: #ECFDF5;
+  --status-available-border: #A7F3D0;
+  --status-available-text: #065F46;
+  --status-available-badge: #10B981;
+  --status-occupied-bg: #FEF2F2;
+  --status-occupied-border: #FECACA;
+  --status-occupied-text: #991B1B;
+  --status-occupied-badge: #EF4444;
+  --status-locked-bg: #FFFBEB;
+  --status-locked-border: #FCD34D;
+  --status-locked-text: #B45309;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-main);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Card Styling */
+.gamehub-card {
+  background: #FFFFFF;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.gamehub-card:hover {
+  border-color: #CBD5E1;
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+}
+
+/* High Contrast Status Badges */
+.badge-available {
+  background-color: var(--status-available-bg);
+  border: 1px solid var(--status-available-border);
+  color: var(--status-available-text);
+  font-weight: 600;
+}
+
+.badge-occupied {
+  background-color: var(--status-occupied-bg);
+  border: 1px solid var(--status-occupied-border);
+  color: var(--status-occupied-text);
+  font-weight: 600;
+}
+
+.badge-locked {
+  background-color: var(--status-locked-bg);
+  border: 1px solid var(--status-locked-border);
+  color: var(--status-locked-text);
+  font-weight: 600;
+}
+
+/* Interactive Visual Seat Map (BookMyShow Style) */
+.seat-map-container {
+  background: #F1F5F9;
+  border: 1px solid #E2E8F0;
+  border-radius: 16px;
+  padding: 20px;
+}
+
+.screen-indicator {
+  width: 70%;
+  height: 8px;
+  background: linear-gradient(90deg, #94A3B8 0%, #3B82F6 50%, #94A3B8 100%);
+  border-radius: 4px;
+  margin: 0 auto 16px auto;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.35);
+}
+
+.seat-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease-in-out;
+  cursor: pointer;
+  user-select: none;
+  position: relative;
+}
+
+/* Seat states */
+.seat-available {
+  background-color: #ECFDF5;
+  border: 2px solid #10B981;
+  color: #065F46;
+}
+
+.seat-available:hover {
+  background-color: #10B981;
+  color: #FFFFFF;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);
+}
+
+.seat-booked {
+  background-color: #FEE2E2;
+  border: 2px solid #EF4444;
+  color: #991B1B;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+.seat-selected {
+  background-color: #2563EB !important;
+  border: 2px solid #1D4ED8 !important;
+  color: #FFFFFF !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+/* Real-Time Seat Locking State */
+.seat-locked {
+  background-color: #FEF3C7 !important;
+  border: 2px solid #F59E0B !important;
+  color: #B45309 !important;
+  cursor: not-allowed;
+  animation: pulse-locked 2s infinite ease-in-out;
+}
+
+@keyframes pulse-locked {
+  0%, 100% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(0.97);
+  }
+}
+
+/* Digital Ticket / Entry Pass */
+.digital-pass {
+  background: #FFFFFF;
+  border: 2px dashed #CBD5E1;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+.digital-pass::before,
+.digital-pass::after {
+  content: '';
+  position: absolute;
+  top: 60%;
+  width: 26px;
+  height: 26px;
+  background-color: #F8FAFC;
+  border-radius: 50%;
+  border: 1px solid #CBD5E1;
+  z-index: 10;
+}
+
+.digital-pass::before {
+  left: -14px;
+}
+
+.digital-pass::after {
+  right: -14px;
+}
+
+/* Pulse animation for live indicators */
+@keyframes pulse-green {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.15);
+  }
+}
+
+.pulse-dot-green {
+  animation: pulse-green 2s infinite ease-in-out;
+}
+
+/* Receptionist Scanner Reticle */
+.scanner-viewport {
+  position: relative;
+  background: #0F172A;
+  border-radius: 16px;
+  overflow: hidden;
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanner-laser {
+  position: absolute;
+  top: 15%;
+  left: 10%;
+  width: 80%;
+  height: 3px;
+  background: #10B981;
+  box-shadow: 0 0 12px #10B981, 0 0 24px #10B981;
+  border-radius: 50%;
+  animation: scan-line 2.2s infinite ease-in-out;
+}
+
+@keyframes scan-line {
+  0% {
+    top: 15%;
+    opacity: 0.8;
+  }
+  50% {
+    top: 85%;
+    opacity: 1;
+  }
+  100% {
+    top: 15%;
+    opacity: 0.8;
+  }
+}
+
+/* F&B Snack Bar Cards */
+.snack-card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 10px 12px;
+  transition: all 0.15s ease;
+}
+
+.snack-card:hover {
+  border-color: #93C5FD;
+  background-color: #F8FAFC;
+}
+
+/* Print styling for digital tickets */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printableTicket, #printableTicket * {
+    visibility: visible;
+  }
+  #printableTicket {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+}

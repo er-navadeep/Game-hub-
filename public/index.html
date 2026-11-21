@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GameHub Pro — Unified Gaming & Sports Booking Platform</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <!-- Custom GameHub Styling -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-[#F8FAFC] min-h-screen text-slate-900 flex flex-col font-sans antialiased">
+
+  <!-- ==================== TOP NAVIGATION ==================== -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        
+        <!-- Logo -->
+        <div class="flex items-center space-x-3 cursor-pointer" onclick="navigate('explore')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-blue-500/20">
+            <i data-lucide="gamepad-2" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span class="text-xl font-black tracking-tight text-slate-900">Game<span class="text-blue-600">Hub</span></span>
+              <span class="text-[10px] bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold px-1.5 py-0.2 rounded uppercase tracking-wider">PRO</span>
+            </div>
+            <span class="hidden md:inline-block text-[11px] text-slate-500 font-medium">Unified Gaming & Sports Hub</span>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center space-x-1 lg:space-x-1.5">
+          <button id="nav-explore" onclick="navigate('explore')" class="px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold transition-all flex items-center space-x-1.5 text-blue-600 bg-blue-50">
+            <i data-lucide="compass" class="w-4 h-4"></i>
+            <span>Explore Hubs</span>
+          </button>
+          
+          <!-- FEATURE 2: SQUAD FINDER NAV TAB -->
+          <button id="nav-squads" onclick="navigate('squads')" class="px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
+            <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i>
+            <span>Squad Finder</span>
+            <span id="squadCountBadge" class="bg-indigo-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">3</span>
+          </button>
+
+          <button id="nav-tickets" onclick="navigate('tickets')" class="px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
+            <i data-lucide="ticket" class="w-4 h-4 text-emerald-500"></i>
+            <span>My Tickets</span>
+            <span id="ticketCountBadge" class="bg-blue-600 text-white text-[10px] px-1.5 py-0.2 rounded-full font-bold">0</span>
+          </button>
+          
+          <!-- FEATURE 1: RECEPTIONIST QR SCANNER -->
+          <button onclick="openScannerModal()" class="px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-all flex items-center space-x-1.5 border border-slate-200" title="Reception Gate QR Validator">
+            <i data-lucide="scan-line" class="w-4 h-4 text-blue-600"></i>
+            <span>Reception Scanner</span>
+          </button>
+
+          <button id="nav-owner" onclick="navigate('owner')" class="px-3 py-2 rounded-xl text-xs lg:text-sm font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center space-x-1.5">
+            <i data-lucide="store" class="w-4 h-4"></i>
+            <span>List Shop</span>
+          </button>
+
+          <button onclick="openActivityLogsModal()" class="px-2.5 py-2 rounded-xl text-xs font-semibold text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-all flex items-center space-x-1">
+            <i data-lucide="activity" class="w-3.5 h-3.5"></i>
+            <span>Audit</span>
+          </button>
+        </nav>
+
+        <!-- Database & Compass Status Badge -->
+        <div class="flex items-center space-x-2.5">
+          <div id="dbStatusPill" class="flex items-center space-x-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-[11px] font-semibold text-emerald-800 shadow-sm" title="Connected to mongodb://127.0.0.1:27017/gamehub">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 pulse-dot-green"></span>
+            <span id="dbStatusText" class="truncate max-w-[130px] sm:max-w-xs">MongoDB: 127.0.0.1:27017</span>
+          </div>
+
+          <!-- Mobile Menu Button -->
+          <div class="flex md:hidden">
+            <button onclick="toggleMobileMenu()" class="p-2 rounded-md text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+              <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Mobile Dropdown -->
+      <div id="mobileMenu" class="hidden md:hidden pb-3 pt-2 border-t border-slate-100 space-y-1">
+        <button onclick="navigate('explore'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-blue-600 bg-blue-50 flex items-center space-x-2">
+          <i data-lucide="compass" class="w-4 h-4"></i>
+          <span>Explore Hubs</span>
+        </button>
+        <button onclick="navigate('squads'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="users" class="w-4 h-4 text-indigo-500"></i>
+            <span>Squad Finder & Matchmaking</span>
+          </div>
+          <span id="squadCountBadgeMobile" class="bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">3</span>
+        </button>
+        <button onclick="navigate('tickets'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i data-lucide="ticket" class="w-4 h-4 text-emerald-500"></i>
+            <span>My Tickets</span>
+          </div>
+          <span id="ticketCountBadgeMobile" class="bg-blue-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+        </button>
+        <button onclick="openScannerModal(); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+          <i data-lucide="scan-line" class="w-4 h-4 text-blue-600"></i>
+          <span>Reception QR Scanner</span>
+        </button>
+        <button onclick="navigate('owner'); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>List Your Shop & Dashboard</span>
+        </button>
+        <button onclick="openActivityLogsModal(); toggleMobileMenu()" class="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-2">
+          <i data-lucide="activity" class="w-4 h-4"></i>
+          <span>Live Activity Audit Trail</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT CONTAINER ==================== -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+    <!-- ==================== VIEW 1: EXPLORE HUBS ==================== -->
+    <section id="view-explore" class="space-y-6">
+      
+      <!-- Top Search & Filter Bar -->
+      <div class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          
+          <!-- Category Toggle Buttons -->
+          <div class="flex items-center space-x-2 overflow-x-auto pb-1 sm:pb-0">
+            <button onclick="setCategoryFilter('All')" id="btn-cat-all" class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-slate-900 text-white shadow-sm transition-all whitespace-nowrap">
+              All Hubs
+            </button>
+            <button onclick="setCategoryFilter('Online Gaming')" id="btn-cat-online" class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all flex items-center space-x-1.5 whitespace-nowrap">
+              <i data-lucide="monitor" class="w-4 h-4 text-indigo-500"></i>
+              <span>Online Gaming</span>
+            </button>
+            <button onclick="setCategoryFilter('Offline Sports')" id="btn-cat-offline" class="category-btn px-4 py-2 rounded-xl text-xs sm:text-sm font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all flex items-center space-x-1.5 whitespace-nowrap">
+              <i data-lucide="trophy" class="w-4 h-4 text-emerald-500"></i>
+              <span>Offline Sports</span>
+            </button>
+          </div>
+
+          <!-- Location & Text Search Filter -->
+          <div class="flex flex-col sm:flex-row items-center gap-2.5 w-full lg:w-auto">
+            
+            <!-- City Dropdown -->
+            <div class="relative w-full sm:w-44">
+              <i data-lucide="map-pin" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+              <select id="cityFilter" onchange="applyFilters()" class="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white appearance-none cursor-pointer">
+                <option value="All">All Cities</option>
+                <option value="Bangalore">Bangalore</option>
+                <option value="Hyderabad">Hyderabad</option>
+                <option value="Chennai">Chennai</option>
+                <option value="Mumbai">Mumbai</option>
+              </select>
+              <i data-lucide="chevron-down" class="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+            </div>
+
+            <!-- Search Input -->
+            <div class="relative w-full sm:w-64">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Search venue, game, area..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+            </div>
+
+            <!-- Reset Button -->
+            <button onclick="resetFilters()" class="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition-all" title="Reset all filters">
+              <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            </button>
+
+          </div>
+
+        </div>
+
+        <!-- Real-Time Availability Legend -->
+        <div class="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">
+          <div class="flex items-center space-x-3">
+            <span class="font-bold text-slate-700">Live Status:</span>
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold text-[11px]">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span>Available</span>
+            </span>
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 font-semibold text-[11px]">
+              <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+              <span>Held by player (Locked)</span>
+            </span>
+            <span class="inline-flex items-center space-x-1 px-2 py-0.5 rounded-full bg-rose-50 text-rose-700 border border-rose-200 font-semibold text-[11px]">
+              <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+              <span>Booked / Occupied</span>
+            </span>
+          </div>
+
+          <div class="text-slate-500 font-medium">
+            Showing <span id="venueCountText" class="font-bold text-slate-900">0</span> verified complexes
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Venue Cards Grid -->
+      <div id="venuesGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+
+      <!-- Empty state if no venues match -->
+      <div id="noVenuesNotice" class="hidden text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 space-y-4">
+        <div class="w-16 h-16 mx-auto rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+          <i data-lucide="search-x" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">No matching hubs found</h3>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">Try selecting "All Cities" or switching between categories, or register a new shop with the button below.</p>
+        <button onclick="navigate('owner')" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition shadow-sm text-xs">
+          List Your Shop on GameHub
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ==================== VIEW 2: SQUAD FINDER (FEATURE 2) ==================== -->
+    <section id="view-squads" class="hidden space-y-6">
+      
+      <!-- Squad Finder Banner -->
+      <div class="bg-gradient-to-r from-indigo-900 via-blue-900 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-lg relative overflow-hidden flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+        <div class="space-y-2 max-w-2xl">
+          <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-indigo-500/30 text-indigo-300 border border-indigo-400/30 text-xs font-bold uppercase tracking-wider">
+            <i data-lucide="flame" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span>Live Matchmaking & Squad Finder</span>
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Need Players for Your Next Match?</h2>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Connect with local gamers and athletes at GameHub venues. Post an open squad beacon or join an existing match to fill the missing slots!
+          </p>
+        </div>
+
+        <button onclick="openCreateSquadModal()" class="px-5 py-3.5 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-lg shadow-blue-500/25 transition flex items-center justify-center space-x-2 shrink-0 text-sm">
+          <i data-lucide="plus-circle" class="w-5 h-5"></i>
+          <span>Post Match Beacon</span>
+        </button>
+      </div>
+
+      <!-- Filter Controls for Squads -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center space-x-2">
+          <button onclick="filterSquadCategory('All')" id="sq-cat-all" class="px-3 py-1.5 rounded-lg font-bold bg-slate-900 text-white">All Beacons</button>
+          <button onclick="filterSquadCategory('Online Gaming')" id="sq-cat-online" class="px-3 py-1.5 rounded-lg font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">🎮 Online Gaming</button>
+          <button onclick="filterSquadCategory('Offline Sports')" id="sq-cat-offline" class="px-3 py-1.5 rounded-lg font-semibold bg-slate-100 text-slate-700 hover:bg-slate-200">⚽ Offline Sports</button>
+        </div>
+
+        <div class="text-slate-500">
+          Showing <span id="squadCountLabel" class="font-bold text-slate-900">0</span> open match beacons
+        </div>
+      </div>
+
+      <!-- Squad Cards Grid -->
+      <div id="squadGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Rendered dynamically via app.js -->
+      </div>
+
+      <!-- Empty state if no squads -->
+      <div id="noSquadsNotice" class="hidden text-center py-12 bg-white rounded-3xl border border-slate-200 p-8 space-y-3">
+        <div class="w-14 h-14 mx-auto rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600">
+          <i data-lucide="users" class="w-7 h-7"></i>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">No active squad beacons in this category</h3>
+        <p class="text-xs text-slate-500 max-w-sm mx-auto">Be the first player to start a match beacon and invite nearby players to join your team!</p>
+        <button onclick="openCreateSquadModal()" class="px-4 py-2 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition text-xs">
+          Post Match Beacon Now
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ==================== VIEW 3: MY TICKETS / BOOKINGS ==================== -->
+    <section id="view-tickets" class="hidden space-y-6">
+      
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center space-x-2">
+            <i data-lucide="ticket" class="w-6 h-6 text-blue-600"></i>
+            <span>My Digital Passes & Bookings</span>
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">Every booking is stored in MongoDB and displays a real-time entry QR code.</p>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <div class="relative w-full sm:w-64">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="ticketSearchInput" oninput="filterMyTickets()" placeholder="Search by phone or #GH ID..." class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white">
+          </div>
+          <button onclick="fetchBookings()" class="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-xl transition" title="Refresh bookings">
+            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tickets Container -->
+      <div id="ticketsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- No Tickets State -->
+      <div id="noTicketsNotice" class="hidden text-center py-16 bg-white rounded-3xl border border-slate-200 p-8 space-y-4">
+        <div class="w-16 h-16 mx-auto rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
+          <i data-lucide="ticket-slash" class="w-8 h-8"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-800">No bookings found</h3>
+        <p class="text-xs sm:text-sm text-slate-500 max-w-md mx-auto">You haven't reserved any gaming stations or sports courts yet. Explore verified hubs and reserve your slot!</p>
+        <button onclick="navigate('explore')" class="px-5 py-2.5 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition shadow-sm text-xs">
+          Browse Available Hubs
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ==================== VIEW 4: OWNER PORTAL & DASHBOARD ==================== -->
+    <section id="view-owner" class="hidden space-y-8">
+      
+      <!-- Owner Portal Top Header -->
+      <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-900 text-white p-6 sm:p-8 rounded-3xl shadow-lg relative overflow-hidden">
+        <div class="relative z-10 max-w-3xl space-y-2">
+          <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 text-xs font-bold uppercase tracking-wider">
+            Owner Portal & Management
+          </span>
+          <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Expand Your Gaming Cafe or Sports Complex</h2>
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            Register your shop, manage live court statuses in real time, view player reservations, and join GameHub for just <span class="text-amber-400 font-bold">₹999/month</span> listing fee.
+          </p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        
+        <!-- Left 2 Cols: Step-by-Step Onboarding Form -->
+        <div class="lg:col-span-2 bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+          
+          <div class="border-b border-slate-100 pb-4">
+            <h3 class="text-lg font-bold text-slate-900 flex items-center space-x-2">
+              <i data-lucide="plus-circle" class="w-5 h-5 text-blue-600"></i>
+              <span>List Your Shop (3-Step Registration)</span>
+            </h3>
+            <p class="text-xs text-slate-500 mt-1">Complete details below to publish your venue live to the customer explore page.</p>
+          </div>
+
+          <form id="ownerRegisterForm" onsubmit="handleRegisterVenue(event)" class="space-y-6">
+            
+            <!-- Step 1: Shop & Owner Details -->
+            <div class="space-y-4">
+              <div class="flex items-center space-x-2 text-sm font-bold text-slate-800">
+                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">1</span>
+                <span>Shop & Contact Information</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Shop / Complex Name *</label>
+                  <input type="text" id="regShopName" required placeholder="e.g. CyberX Gaming Hub" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Owner Full Name *</label>
+                  <input type="text" id="regOwnerName" required placeholder="e.g. Rahul Sharma" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Contact Phone Number *</label>
+                  <input type="text" id="regPhone" required placeholder="+91 98765 43210" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">City *</label>
+                  <select id="regCity" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white">
+                    <option value="Bangalore">Bangalore</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Chennai">Chennai</option>
+                    <option value="Mumbai">Mumbai</option>
+                    <option value="Delhi NCR">Delhi NCR</option>
+                    <option value="Pune">Pune</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Full Physical Address *</label>
+                <input type="text" id="regAddress" required placeholder="Shop 12, Ground Floor, Tech Park Road..." class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Google Maps Location Link</label>
+                  <input type="url" id="regMapUrl" placeholder="https://maps.google.com/?q=..." class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Cover Photo URL</label>
+                  <input type="url" id="regImageUrl" placeholder="https://images.unsplash.com/..." class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 2: Games & Capacity -->
+            <div class="space-y-4 pt-4 border-t border-slate-100">
+              <div class="flex items-center space-x-2 text-sm font-bold text-slate-800">
+                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">2</span>
+                <span>Category, Games & Capacity Configuration</span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center space-x-3 hover:border-blue-500 transition has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50">
+                  <input type="radio" name="regCategory" value="Online Gaming" checked class="text-blue-600">
+                  <span class="text-xs font-bold text-slate-800">🎮 Online Gaming</span>
+                </label>
+                <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center space-x-3 hover:border-blue-500 transition has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50">
+                  <input type="radio" name="regCategory" value="Offline Sports" class="text-blue-600">
+                  <span class="text-xs font-bold text-slate-800">⚽ Offline Sports</span>
+                </label>
+                <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center space-x-3 hover:border-blue-500 transition has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50">
+                  <input type="radio" name="regCategory" value="Both" class="text-blue-600">
+                  <span class="text-xs font-bold text-slate-800">⚡ Both (Hybrid)</span>
+                </label>
+              </div>
+
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 mb-1">Games Offered (comma separated) *</label>
+                <input type="text" id="regGames" required placeholder="e.g. Valorant, PUBG PC, PS5 FIFA, Volleyball, Swimming" value="Valorant, PUBG PC, PS5 FIFA 24" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Total Seats or Batch Capacity Limit *</label>
+                  <input type="number" id="regCapacity" min="1" max="100" value="20" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                  <span class="text-[11px] text-slate-400">Total PC seats (e.g. 24) or max hourly members (e.g. 10 for pool).</span>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-700 mb-1">Hourly Pricing (₹ / hour) *</label>
+                  <input type="number" id="regPrice" min="50" max="5000" value="150" required class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                </div>
+              </div>
+            </div>
+
+            <!-- Step 3: Monthly Subscription & Checkout -->
+            <div class="space-y-4 pt-4 border-t border-slate-100">
+              <div class="flex items-center space-x-2 text-sm font-bold text-slate-800">
+                <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">3</span>
+                <span>Monthly Subscription Checkout</span>
+              </div>
+
+              <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <span class="text-xs font-bold text-blue-700 uppercase tracking-wider">GameHub Verified Partner Pass</span>
+                  <h4 class="text-xl font-black text-slate-900 mt-0.5">₹999 <span class="text-xs font-normal text-slate-500">/ month</span></h4>
+                  <ul class="text-xs text-slate-600 space-y-1 mt-2">
+                    <li class="flex items-center space-x-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i><span>Instant live listing on Explore page</span></li>
+                    <li class="flex items-center space-x-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i><span>Real-time seat & court availability engine</span></li>
+                    <li class="flex items-center space-x-1.5"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-600"></i><span>Instant Digital QR Pass generation for customers</span></li>
+                  </ul>
+                </div>
+
+                <div class="text-right">
+                  <span class="inline-block text-[11px] bg-emerald-100 text-emerald-800 font-bold px-2.5 py-1 rounded-full mb-2">
+                    30-Day Auto Activation
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" id="regSubmitBtn" class="w-full py-3.5 px-6 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-2xl shadow-md shadow-blue-500/20 transition-all flex items-center justify-center space-x-2 text-sm">
+                <i data-lucide="shield-check" class="w-5 h-5"></i>
+                <span>Activate Listing & Pay ₹999</span>
+              </button>
+              <p class="text-[11px] text-center text-slate-400 mt-2">Simulated payment process. Instantly persists shop & logs subscription in MongoDB.</p>
+            </div>
+
+          </form>
+
+        </div>
+
+        <!-- Right Col: Owner Live Management & Court Toggle -->
+        <div class="space-y-6">
+          
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <h3 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+              <i data-lucide="sliders" class="w-5 h-5 text-indigo-600"></i>
+              <span>Live Court / Shop Status Controls</span>
+            </h3>
+            <p class="text-xs text-slate-500">Toggle live offline court availability in MongoDB with a single click.</p>
+
+            <div id="ownerVenuesList" class="space-y-3">
+              <!-- Rendered via app.js -->
+            </div>
+          </div>
+
+          <!-- Quick Activity Feed Preview -->
+          <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+            <div class="flex items-center justify-between">
+              <h3 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+                <i data-lucide="activity" class="w-5 h-5 text-emerald-600"></i>
+                <span>Recent Audit Trail</span>
+              </h3>
+              <button onclick="openActivityLogsModal()" class="text-xs text-blue-600 font-semibold hover:underline">
+                View All
+              </button>
+            </div>
+
+            <div id="ownerMiniLogs" class="space-y-2.5 text-xs text-slate-600">
+              <!-- Rendered via app.js -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ==================== BOOKING MODAL (SEAT MAP, LOCK TIMER, F&B) ==================== -->
+  <div id="bookingModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8 max-h-[92vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      
+      <!-- Modal Header -->
+      <div class="bg-slate-900 text-white p-5 sm:p-6 flex items-start justify-between">
+        <div>
+          <span id="bmCategoryBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/30 uppercase tracking-wider">
+            Online Gaming
+          </span>
+          <h3 id="bmShopName" class="text-xl sm:text-2xl font-black mt-1.5">Nexus Arena Esports Hub</h3>
+          <p id="bmAddress" class="text-xs text-slate-400 mt-0.5 flex items-center space-x-1">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+            <span>Garuda Mall, Bangalore</span>
+          </p>
+        </div>
+        <button onclick="closeBookingModal()" class="p-2 text-slate-400 hover:text-white rounded-full hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <!-- Real-Time Seat Lock Banner (FEATURE 4) -->
+      <div id="seatLockTimerBanner" class="hidden bg-amber-500/10 border-b border-amber-500/30 px-5 py-2.5 flex items-center justify-between text-xs font-semibold text-amber-800">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="clock" class="w-4 h-4 text-amber-600 animate-spin"></i>
+          <span>Seats held for your session. Complete booking before lock expires:</span>
+        </div>
+        <div id="seatLockCountdown" class="font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-md">
+          05:00
+        </div>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-5 sm:p-6 space-y-6 overflow-y-auto flex-1">
+        
+        <!-- Step 1: Select Date -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">1. Select Booking Date</label>
+          <div class="flex items-center space-x-2">
+            <button onclick="selectBookingDate(0)" id="dateBtn-0" class="date-tab px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white border border-blue-600">
+              Today
+            </button>
+            <button onclick="selectBookingDate(1)" id="dateBtn-1" class="date-tab px-4 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200">
+              Tomorrow
+            </button>
+            <button onclick="selectBookingDate(2)" id="dateBtn-2" class="date-tab px-4 py-2 rounded-xl text-xs font-medium bg-slate-100 text-slate-700 border border-slate-200 hover:bg-slate-200">
+              Day After
+            </button>
+            <input type="date" id="bookingCustomDate" onchange="onCustomDateChange(this.value)" class="text-xs font-medium px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
+          </div>
+        </div>
+
+        <!-- Step 2: Select Hourly Time Slot -->
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">2. Select Hourly Time Slot</label>
+          <div id="slotsContainer" class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <!-- Dynamic Slots -->
+          </div>
+        </div>
+
+        <!-- Step 3: Interactive Real-Time Map / Capacity Selector -->
+        <div id="interactiveArea" class="space-y-4">
+          
+          <!-- ONLINE GAMING: BOOKMYSHOW-STYLE SEAT MAP -->
+          <div id="seatMapSection" class="hidden space-y-3">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">3. Interactive Seat Map (Gaming Stations)</label>
+              <div class="flex items-center space-x-2 sm:space-x-3 text-[11px]">
+                <span class="flex items-center space-x-1 text-emerald-700"><span class="w-2.5 h-2.5 rounded bg-emerald-100 border border-emerald-500"></span><span>Ready</span></span>
+                <span class="flex items-center space-x-1 text-blue-700"><span class="w-2.5 h-2.5 rounded bg-blue-600"></span><span>Selected</span></span>
+                <span class="flex items-center space-x-1 text-amber-700"><span class="w-2.5 h-2.5 rounded bg-amber-100 border border-amber-500"></span><span>Held</span></span>
+                <span class="flex items-center space-x-1 text-rose-700"><span class="w-2.5 h-2.5 rounded bg-rose-100 border border-rose-500"></span><span>Booked</span></span>
+              </div>
+            </div>
+
+            <div class="seat-map-container text-center">
+              <div class="screen-indicator"></div>
+              <p class="text-[11px] font-semibold text-slate-400 uppercase tracking-widest mb-4">GAMING STAGE / ULTRA FIBER SERVER RACK</p>
+              
+              <!-- Seat Grid -->
+              <div id="seatGrid" class="flex flex-wrap gap-2.5 justify-center max-w-md mx-auto">
+                <!-- Injected via app.js -->
+              </div>
+
+              <!-- Seat Selection Stats Bar -->
+              <div class="mt-4 pt-3 border-t border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600 font-medium">
+                <div>Selected Seats: <span id="selectedSeatsLabel" class="font-bold text-blue-600">None</span></div>
+                <div>Station Rate: <span id="stationRateLabel" class="font-bold text-slate-900">₹150/hr</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- OFFLINE SPORTS: COURT-BASED (VOLLEYBALL) -->
+          <div id="courtStatusSection" class="hidden space-y-3">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">3. Live Court Status for Selected Slot</label>
+            <div id="courtStatusAlert" class="p-5 rounded-2xl border transition-all flex items-center space-x-4">
+              <!-- Injected via app.js -->
+            </div>
+          </div>
+
+          <!-- OFFLINE SPORTS: CAPACITY-BASED (SWIMMING POOL BATCH LIMIT) -->
+          <div id="swimmingCapacitySection" class="hidden space-y-3">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider">3. Hourly Batch Capacity (Max 10 Swimmers)</label>
+            
+            <div class="bg-blue-50/60 border border-blue-200 rounded-2xl p-5 space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <h4 class="text-sm font-bold text-slate-900" id="swimmingSlotBatchTitle">5:00 PM – 6:00 PM Batch</h4>
+                  <p class="text-xs text-slate-500" id="swimmingCapacitySub">Strict 10-member safety limit enforced per batch.</p>
+                </div>
+                <div id="swimmingSpotsLeftBadge" class="px-3 py-1 bg-emerald-100 border border-emerald-300 text-emerald-800 rounded-full text-xs font-bold">
+                  4 spots left
+                </div>
+              </div>
+
+              <!-- Progress bar -->
+              <div class="w-full bg-slate-200 rounded-full h-3 overflow-hidden">
+                <div id="swimmingCapacityBar" class="bg-blue-600 h-3 rounded-full transition-all duration-300" style="width: 60%"></div>
+              </div>
+              <div class="flex justify-between text-xs text-slate-500 font-medium">
+                <span id="swimmingFilledText">6/10 slots filled</span>
+                <span>Max 10 Swimmers</span>
+              </div>
+
+              <!-- Spots Counter -->
+              <div class="pt-2 border-t border-blue-100 flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Number of Swimmers / Spots:</span>
+                <div class="flex items-center space-x-3">
+                  <button type="button" onclick="changeSwimmingSpots(-1)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center">-</button>
+                  <span id="swimmingSpotsCount" class="font-black text-base text-slate-900 w-6 text-center">1</span>
+                  <button type="button" onclick="changeSwimmingSpots(1)" class="w-8 h-8 rounded-lg bg-white border border-slate-300 font-bold text-slate-700 hover:bg-slate-50 flex items-center justify-center">+</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- STEP 3.5: IN-VENUE F&B SNACK BAR (FEATURE 3) -->
+        <div class="space-y-3 pt-3 border-t border-slate-100">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+              <i data-lucide="coffee" class="w-4 h-4 text-amber-500"></i>
+              <span>Gaming Fuel & In-Venue Snacks (Optional)</span>
+            </label>
+            <span id="snacksTotalPill" class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+              ₹0 in snacks
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5" id="snackBarList">
+            <!-- Rendered dynamically via app.js -->
+          </div>
+        </div>
+
+        <!-- Step 4: Player Details & Payment -->
+        <div class="space-y-4 pt-4 border-t border-slate-100">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">4. Player Information & Payment Mode</label>
+          
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Player Full Name *</label>
+              <input type="text" id="bmPlayerName" placeholder="e.g. Aman Sharma" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Phone Number *</label>
+              <input type="text" id="bmPlayerPhone" placeholder="+91 98765 43210" class="w-full px-3.5 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none">
+            </div>
+          </div>
+
+          <!-- Payment Options -->
+          <div class="space-y-2">
+            <span class="block text-xs font-semibold text-slate-600">Select Payment Method *</span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center space-x-3 hover:border-blue-500 transition has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50">
+                <input type="radio" name="bmPaymentMethod" value="Pay Online" checked class="text-blue-600">
+                <div>
+                  <div class="text-xs font-bold text-slate-900">⚡ Pay Online (UPI / Card)</div>
+                  <div class="text-[11px] text-slate-500">Instant confirmation & digital QR pass</div>
+                </div>
+              </label>
+
+              <label class="cursor-pointer border border-slate-200 rounded-xl p-3 flex items-center space-x-3 hover:border-blue-500 transition has-[:checked]:border-blue-600 has-[:checked]:bg-blue-50/50">
+                <input type="radio" name="bmPaymentMethod" value="Pay at Venue" class="text-blue-600">
+                <div>
+                  <div class="text-xs font-bold text-slate-900">💵 Pay at Venue (Cash)</div>
+                  <div class="text-[11px] text-slate-500">Pay cash on arrival at reception</div>
+                </div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="bg-slate-50 border-t border-slate-200 p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <span class="text-xs text-slate-500">Total Payable (Seats + Snacks):</span>
+          <div class="text-2xl font-black text-slate-900" id="bmTotalAmountText">₹0</div>
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="closeBookingModal()" class="px-5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 hover:bg-slate-100 transition">
+            Cancel
+          </button>
+          <button onclick="submitBooking()" id="bmConfirmBtn" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold transition shadow-md shadow-blue-500/20 flex items-center space-x-2">
+            <i data-lucide="check-circle" class="w-4 h-4"></i>
+            <span>Confirm & Generate Pass</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== RECEPTIONIST QR SCANNER MODAL (FEATURE 1) ==================== -->
+  <div id="scannerModal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="bg-slate-900 text-white p-5 flex items-center justify-between">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-8 h-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+            <i data-lucide="scan-line" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-base font-bold">Reception Gate Pass Scanner</h3>
+            <p class="text-[11px] text-slate-400">Validate customer tickets and confirm entry</p>
+          </div>
+        </div>
+        <button onclick="closeScannerModal()" class="p-1.5 text-slate-400 hover:text-white rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="p-5 sm:p-6 space-y-5">
+        
+        <!-- Scanner Viewfinder Box -->
+        <div class="scanner-viewport">
+          <div class="scanner-laser"></div>
+          <div class="text-center z-10 px-4 space-y-2">
+            <i data-lucide="qr-code" class="w-12 h-12 text-slate-500 mx-auto opacity-70"></i>
+            <p class="text-xs font-semibold text-slate-300">Ready to Scan Customer Pass</p>
+            <p class="text-[10px] text-slate-500">Upload ticket image or enter Booking ID below</p>
+          </div>
+        </div>
+
+        <!-- Quick Code Input / Test Selector -->
+        <div class="space-y-2">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Quick Code Entry</label>
+          <div class="flex items-center space-x-2">
+            <div class="relative flex-1">
+              <i data-lucide="hash" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="manualBookingIdInput" placeholder="e.g. #GH-84920" class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs sm:text-sm font-semibold uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+            <button onclick="verifyCheckInFromInput()" id="verifyBtn" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-xs transition flex items-center space-x-1.5 shrink-0">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+              <span>Verify</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Live Verification Result Card -->
+        <div id="checkInResultBox" class="hidden rounded-2xl p-4 border transition-all space-y-3">
+          <!-- Injected via app.js -->
+        </div>
+
+        <!-- Quick Demo Ticket Shortcuts -->
+        <div class="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+          <span>Test Quick Codes:</span>
+          <div class="space-x-1.5">
+            <button onclick="document.getElementById('manualBookingIdInput').value='#GH-84920'; verifyCheckInFromInput()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold text-slate-700 text-[11px]">#GH-84920</button>
+            <button onclick="document.getElementById('manualBookingIdInput').value='#GH-91024'; verifyCheckInFromInput()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold text-slate-700 text-[11px]">#GH-91024</button>
+            <button onclick="document.getElementById('manualBookingIdInput').value='#GH-33418'; verifyCheckInFromInput()" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 rounded-lg font-bold text-slate-700 text-[11px]">#GH-33418</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== POST SQUAD BEACON MODAL ==================== -->
+  <div id="createSquadModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="bg-gradient-to-r from-indigo-900 to-slate-900 text-white p-5 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="users" class="w-5 h-5 text-indigo-400"></i>
+          <h3 class="text-base font-bold">Post a Squad Match Beacon</h3>
+        </div>
+        <button onclick="closeCreateSquadModal()" class="p-1.5 text-slate-400 hover:text-white rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleCreateSquad(event)" class="p-5 sm:p-6 space-y-4 text-xs">
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Match Headline / Squad Title *</label>
+          <input type="text" id="sqTitle" required placeholder="e.g. Need 2 players for Valorant 5v5 Ranked (Diamond+)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Category *</label>
+            <select id="sqCategory" onchange="updateSquadVenuesDropdown()" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 bg-white">
+              <option value="Online Gaming">Online Gaming</option>
+              <option value="Offline Sports">Offline Sports</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Game / Sport Name *</label>
+            <input type="text" id="sqGame" required placeholder="e.g. Valorant, Volleyball, CS2" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Select Venue *</label>
+            <select id="sqVenueSelect" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 bg-white">
+              <!-- Dynamically populated -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">City *</label>
+            <input type="text" id="sqCity" required placeholder="e.g. Bangalore" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Date *</label>
+            <input type="date" id="sqDate" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Time Slot *</label>
+            <select id="sqSlot" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 bg-white">
+              <option>05:00 PM - 06:00 PM</option>
+              <option>06:00 PM - 07:00 PM</option>
+              <option>07:00 PM - 08:00 PM</option>
+              <option>08:00 PM - 09:00 PM</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Total Squad Size</label>
+            <input type="number" id="sqTotal" min="2" max="20" value="5" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Players Needed *</label>
+            <input type="number" id="sqNeeded" min="1" max="19" value="2" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Your Name (Captain) *</label>
+            <input type="text" id="sqHostName" required placeholder="e.g. Kunal Ray" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Contact Phone (WhatsApp) *</label>
+            <input type="text" id="sqHostPhone" required placeholder="+91 98765 43210" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Skill Level / Requirements</label>
+          <input type="text" id="sqSkill" placeholder="e.g. Gold+ or Casual friendly" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Description / Notes</label>
+          <textarea id="sqDesc" rows="2" placeholder="Mention roles needed (Duelist, Attacker, Libero, etc.)" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500"></textarea>
+        </div>
+
+        <button type="submit" class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl transition text-xs shadow-md">
+          Publish Beacon Live
+        </button>
+      </form>
+
+    </div>
+  </div>
+
+  <!-- ==================== JOIN SQUAD MODAL ==================== -->
+  <div id="joinSquadModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-white w-full max-w-sm rounded-3xl shadow-2xl border border-slate-200 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div class="bg-indigo-900 text-white p-5 flex items-center justify-between">
+        <h3 class="text-sm font-bold">Join Match Squad</h3>
+        <button onclick="closeJoinSquadModal()" class="p-1 text-slate-400 hover:text-white rounded-full">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="p-5 space-y-4 text-xs">
+        <div>
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Squad Title</span>
+          <h4 id="jsTitle" class="font-bold text-slate-900 text-sm mt-0.5">Valorant 5v5 Ranked</h4>
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Your Full Name *</label>
+          <input type="text" id="jsPlayerName" required placeholder="e.g. Sahil Khan" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Your Contact Phone *</label>
+          <input type="text" id="jsPlayerPhone" required placeholder="+91 98765 43210" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-xs focus:ring-2 focus:ring-indigo-500">
+        </div>
+
+        <button onclick="submitJoinSquad()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-sm">
+          Confirm Joining Squad
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DIGITAL QR TICKET PASS MODAL ==================== -->
+  <div id="ticketModal" class="fixed inset-0 z-50 bg-slate-900/70 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-200">
+      
+      <div id="printableTicket" class="digital-pass m-4 p-6 bg-white space-y-5">
+        
+        <!-- Pass Header -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center space-x-2">
+            <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+              <i data-lucide="gamepad-2" class="w-4 h-4"></i>
+            </div>
+            <span class="font-black text-slate-900 tracking-tight">Game<span class="text-blue-600">Hub</span> Pass</span>
+          </div>
+          <span id="dtStatusBadge" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+            PAID ONLINE
+          </span>
+        </div>
+
+        <!-- Booking ID & Venue -->
+        <div class="text-center space-y-1">
+          <span class="text-[11px] uppercase tracking-wider font-bold text-slate-400">Entry Verification ID</span>
+          <h2 id="dtBookingId" class="text-2xl font-black text-blue-600 tracking-wider">#GH-84920</h2>
+          <h3 id="dtVenueName" class="text-base font-bold text-slate-900 mt-1">Nexus Arena Esports Hub</h3>
+          <p id="dtVenueAddress" class="text-xs text-slate-500">Bangalore, Karnataka</p>
+        </div>
+
+        <!-- Visual QR Code -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center space-y-2">
+          <img id="dtQrImage" src="" alt="Booking QR Code" class="w-40 h-40 object-contain rounded-lg shadow-sm border border-slate-100 bg-white p-2">
+          <div class="flex items-center space-x-1.5 text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
+            <i data-lucide="scan-line" class="w-3.5 h-3.5 text-blue-500"></i>
+            <span>Scan at Reception Gate</span>
+          </div>
+        </div>
+
+        <!-- Check-in Status Stamp -->
+        <div id="dtCheckInStamp" class="hidden text-center p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-center space-x-1.5">
+          <i data-lucide="check-circle" class="w-4 h-4 text-emerald-600"></i>
+          <span>Verified & Checked-In at Reception</span>
+        </div>
+
+        <!-- Pass Metadata Grid -->
+        <div class="grid grid-cols-2 gap-3 text-xs border-t border-b border-dashed border-slate-200 py-3">
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Player</span>
+            <span id="dtPlayerName" class="font-bold text-slate-800">Aman Sharma</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Phone</span>
+            <span id="dtPhone" class="font-bold text-slate-800">+91 98765 43210</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Date & Slot</span>
+            <span id="dtSlot" class="font-bold text-slate-800">Today, 5-6 PM</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Reserved Seats/Spots</span>
+            <span id="dtSeats" class="font-bold text-blue-600">A1, A2</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Payment Mode</span>
+            <span id="dtPaymentMethod" class="font-bold text-slate-800">Pay Online</span>
+          </div>
+          <div>
+            <span class="text-slate-400 block text-[10px] uppercase font-semibold">Total Paid</span>
+            <span id="dtTotalAmount" class="font-black text-emerald-600 text-sm">₹300</span>
+          </div>
+        </div>
+
+        <!-- F&B Snacks Ordered (If Any) -->
+        <div id="dtSnacksSection" class="hidden space-y-1 text-xs bg-amber-50/60 p-2.5 rounded-xl border border-amber-200">
+          <span class="font-bold text-amber-900 block text-[10px] uppercase">In-Venue Snacks Pre-Ordered:</span>
+          <div id="dtSnacksList" class="text-slate-700 text-[11px] font-medium"></div>
+        </div>
+
+        <p class="text-[10px] text-center text-slate-400">
+          Present this digital QR ticket on arrival. Persisted securely in GameHub MongoDB.
+        </p>
+
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="bg-slate-50 p-4 border-t border-slate-200 flex items-center justify-between gap-3">
+        <button onclick="window.print()" class="flex-1 py-2.5 px-4 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition flex items-center justify-center space-x-1.5">
+          <i data-lucide="printer" class="w-4 h-4"></i>
+          <span>Print / Save PDF</span>
+        </button>
+        <button onclick="closeTicketModal()" class="flex-1 py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5">
+          <i data-lucide="check" class="w-4 h-4"></i>
+          <span>Done</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==================== ACTIVITY AUDIT LOG MODAL ==================== -->
+  <div id="activityLogsModal" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-8 max-h-[85vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+      
+      <div class="bg-slate-900 text-white p-5 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <i data-lucide="activity" class="w-5 h-5 text-emerald-400"></i>
+          <div>
+            <h3 class="text-base sm:text-lg font-bold">Live Activity Audit Trail</h3>
+            <p class="text-xs text-slate-400">MongoDB `activity_logs` collection real-time feed</p>
+          </div>
+        </div>
+        <button onclick="closeActivityLogsModal()" class="p-2 text-slate-400 hover:text-white rounded-full">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div id="auditLogsContainer" class="p-5 space-y-3 overflow-y-auto flex-1">
+        <!-- Rendered via app.js -->
+      </div>
+
+      <div class="bg-slate-50 p-4 border-t border-slate-200 flex justify-end">
+        <button onclick="closeActivityLogsModal()" class="px-5 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-xl hover:bg-slate-300 transition">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- QR Code Generator Script -->
+  <script src="js/qrcode.min.js"></script>
+
+  <!-- GameHub Main Controller Script -->
+  <script src="js/app.js"></script>
+</body>
+</html>
